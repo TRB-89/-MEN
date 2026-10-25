@@ -484,6 +484,12 @@ export class ApiService {
     return this.request(query, { timeoutMs });
   }
 
+  async getAttackReplayTimeline(incidentId?: string, timeoutMs: number = 20000): Promise<{ count: number; timeline: any[] }> {
+    let query = '/api/v1/incidents/timeline/replay';
+    if (incidentId) query += `?incident_id=${encodeURIComponent(incidentId)}`;
+    return this.request(query, { timeoutMs });
+  }
+
   // --- Module 1: Neural Threat Detection Engine Endpoints ---
   async getDetectionHealth(timeoutMs: number = 10000): Promise<{
     status: string;

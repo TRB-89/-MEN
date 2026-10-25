@@ -3,27 +3,37 @@
 @tailwind utilities;
 
 :root {
+  /* BLACKSITE Official Design Tokens */
+  --blacksite-background: #050506;
+  --blacksite-surface: #0E0E11;
+  --blacksite-panel: #17171C;
+  --blacksite-chrome: #E2E2E6;
+  --blacksite-muted: #95959E;
+  --blacksite-crimson: #B5122D;
+  --blacksite-signal: #F0354E;
+  --blacksite-border: rgba(255, 255, 255, 0.11);
+
   --omen-black: #050506;
-  --omen-surface: #101013;
-  --omen-elevated: #19191D;
-  --omen-chrome: #E2E2E5;
-  --omen-muted: #919198;
-  --omen-crimson: #B10F29;
-  --omen-signal: #F02D46;
-  --omen-border: rgba(255, 255, 255, 0.12);
+  --omen-surface: #0E0E11;
+  --omen-elevated: #17171C;
+  --omen-chrome: #E2E2E6;
+  --omen-muted: #95959E;
+  --omen-crimson: #B5122D;
+  --omen-signal: #F0354E;
+  --omen-border: rgba(255, 255, 255, 0.11);
 
   --background: #050506;
-  --secondary: #101013;
-  --panel: #101013;
-  --crimson: #B10F29;
-  --bright-red: #F02D46;
+  --secondary: #0E0E11;
+  --panel: #17171C;
+  --crimson: #B5122D;
+  --bright-red: #F0354E;
   --deep-red: #5C0614;
-  --chrome: #E2E2E5;
+  --chrome: #E2E2E6;
   --text: #F5F5F5;
-  --muted: #919198;
+  --muted: #95959E;
   --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-hairline: rgba(255, 255, 255, 0.12);
-  --glow-crimson: rgba(177, 15, 41, 0.35);
+  --border-hairline: rgba(255, 255, 255, 0.11);
+  --glow-crimson: rgba(181, 18, 45, 0.35);
 }
 
 body {

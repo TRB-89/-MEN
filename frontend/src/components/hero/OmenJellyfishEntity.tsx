@@ -2,7 +2,7 @@ import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-export type OmenEntityState = 'IDLE' | 'ANALYZING' | 'ELEVATED_RISK' | 'SIMULATION';
+export type OmenEntityState = 'IDLE' | 'ANALYZING' | 'ELEVATED_RISK' | 'SIMULATION' | 'SIMULATING';
 
 interface JellyfishProps {
   reducedMotion?: boolean;
@@ -407,7 +407,7 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false, entit
       contractDepth = 0.22;
       emissivePulse = 3.8 + Math.sin(time * 6.5) * 1.4;
       ringRotSpeed = 0.65;
-    } else if (entityState === 'SIMULATION') {
+    } else if (entityState === 'SIMULATION' || entityState === 'SIMULATING') {
       speedMult = 1.25;
       pulseFrequency = 1.6;
       emissivePulse = 2.9 + Math.sin(time * 3.5) * 0.9;

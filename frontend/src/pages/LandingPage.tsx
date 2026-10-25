@@ -643,74 +643,199 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* SECTION 5 — EDITORIAL SCROLL STORYTELLING */}
+      {/* SECTION 5 — CINEMATIC SCROLL STORYTELLING: SIX CONNECTED CHAPTERS */}
       <section
         id="architecture"
         ref={storytellingRef}
-        className="relative z-10 py-32 px-6 lg:px-12 max-w-7xl mx-auto border-t border-[#DCDCE0]/10"
+        className="relative z-10 py-32 px-6 lg:px-12 max-w-7xl mx-auto border-t border-[#DCDCE0]/10 space-y-28"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-          {/* Left Editorial Headline */}
-          <div className="lg:col-span-6 space-y-8 story-reveal">
-            <span className="font-technical text-xs uppercase tracking-widest text-[#FF293F] font-semibold block">
-              // EDITORIAL ESSENCE
+        {/* Story Section Masthead */}
+        <div className="space-y-4 max-w-3xl story-reveal">
+          <span className="font-technical text-xs uppercase tracking-widest text-[#FF293F] font-semibold block">
+            // CINEMATIC INTELLIGENCE ARCHITECTURE
+          </span>
+          <h2 className="font-heading text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-[#F5F5F5] leading-[1.05]">
+            FROM ANOMALY TO{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF293F] to-[#D10E24]">
+              AUTONOMOUS CONTAINMENT
             </span>
-            <h2 className="font-heading text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-[#F5F5F5] leading-[1.05]">
-              THE FUTURE OF{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF293F] to-[#D10E24]">
-                CYBER DEFENSE
-              </span>{' '}
-              IS{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF293F] to-[#D10E24]">
-                PREDICTIVE.
-              </span>
-            </h2>
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#FF293F] to-transparent rounded-full shadow-[0_0_12px_#FF293F]" />
+          <p className="font-sans text-base text-[#99999F] leading-relaxed">
+            Unfolding across six synchronized operational phases. ØMEN transforms isolated network anomalies into predictive graph trajectories and mathematically verified containment actions before infrastructure compromise.
+          </p>
+        </div>
 
-            {/* Glowing red animated accent rule */}
-            <div className="w-24 h-1 bg-gradient-to-r from-[#FF293F] to-transparent rounded-full shadow-[0_0_12px_#FF293F]" />
-
-            <p className="font-sans text-lg text-[#99999F] leading-relaxed max-w-md">
-              Conventional cybersecurity relies on reactive signatures and after-the-fact breach forensics. ØMEN inverts the paradigm by projecting attack corridors across live graph memory before adversaries reach critical infrastructure.
+        {/* Chapter 2 — Detection */}
+        <div className="story-reveal grid grid-cols-1 lg:grid-cols-12 gap-10 items-center p-8 sm:p-12 rounded-3xl bg-[#101013]/80 backdrop-blur-xl border border-white/10 hover:border-[#FF293F]/40 transition-all duration-300">
+          <div className="lg:col-span-5 space-y-3">
+            <span className="font-technical text-xs text-[#FF293F] tracking-widest uppercase font-bold">
+              CHAPTER 02 // NEURAL INGESTION
+            </span>
+            <h3 className="font-heading text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-[#F5F5F5]">
+              EVERY ANOMALY LEAVES A TRACE.
+            </h3>
+            <p className="font-sans text-sm text-[#99999F] leading-relaxed">
+              Evaluating 191 transformed UNSW-NB15 flow features across Random Forest classification, deep PyTorch Multi-Layer Perceptrons, and Isolation Forest anomaly boundaries to eliminate blind spots with 98.24% recall.
             </p>
+            <div className="font-technical text-xs text-[#E2E2E6] flex items-center gap-3 pt-2">
+              <span className="px-2 py-0.5 bg-surface-elevated border border-white/10 rounded">RANDOM FOREST</span>
+              <span>•</span>
+              <span className="px-2 py-0.5 bg-surface-elevated border border-white/10 rounded">PYTORCH MLP</span>
+              <span>•</span>
+              <span className="px-2 py-0.5 bg-surface-elevated border border-white/10 rounded">ISOLATION FOREST</span>
+            </div>
           </div>
-
-          {/* Right Editorial Narratives (3 Rounded Asymmetric Editorial Panels) */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="story-reveal p-8 rounded-3xl bg-[#161619]/60 backdrop-blur-xl border border-[#DCDCE0]/10 hover:border-[#D10E24]/40 transition-colors">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="font-technical text-xs text-[#FF293F]">01</span>
-                <h3 className="font-heading text-xl font-bold text-[#F5F5F5]">
-                  Neural Consensus Ingestion
-                </h3>
-              </div>
-              <p className="font-sans text-sm text-[#99999F] leading-relaxed">
-                Evaluating 191 transformed UNSW-NB15 flow features across Random Forest classification, deep PyTorch Multi-Layer Perceptrons, and Isolation Forest anomaly boundaries to eliminate blind spots with 98.24% recall.
-              </p>
+          <div className="lg:col-span-7 bg-[#050506] border border-white/10 rounded-2xl p-6 font-mono text-xs space-y-3">
+            <div className="flex justify-between text-muted text-[10px] pb-2 border-b border-white/5 uppercase">
+              <span>FEATURE FLOW VECTOR</span>
+              <span className="text-emerald-400 font-bold">INFERENCE: 1.4MS</span>
             </div>
-
-            <div className="story-reveal p-8 rounded-3xl bg-[#161619]/60 backdrop-blur-xl border border-[#DCDCE0]/10 hover:border-[#D10E24]/40 transition-colors">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="font-technical text-xs text-[#FF293F]">02</span>
-                <h3 className="font-heading text-xl font-bold text-[#F5F5F5]">
-                  Graph-Theoretical Intelligence
-                </h3>
+            <div className="space-y-2 text-[11px]">
+              <div className="flex justify-between items-center p-2 bg-[#101013] border border-white/5 rounded">
+                <span className="text-muted">sbytes / dbytes ratio:</span>
+                <span className="text-chrome font-bold">4.821 (Elevated Exfiltration)</span>
               </div>
-              <p className="font-sans text-sm text-[#99999F] leading-relaxed">
-                Representing the enterprise as a zero-trust state graph using NetworkX. Every host, server, and gateway carries dynamic risk scores, mapping real-time exposure and chokepoints along lateral movement paths.
-              </p>
-            </div>
-
-            <div className="story-reveal p-8 rounded-3xl bg-[#161619]/60 backdrop-blur-xl border border-[#DCDCE0]/10 hover:border-[#D10E24]/40 transition-colors">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="font-technical text-xs text-[#FF293F]">03</span>
-                <h3 className="font-heading text-xl font-bold text-[#F5F5F5]">
-                  Autonomous Containment Simulation
-                </h3>
+              <div className="flex justify-between items-center p-2 bg-[#101013] border border-white/5 rounded">
+                <span className="text-muted">sttl / dttl hop distance:</span>
+                <span className="text-amber-400 font-bold">64 / 252 (Cross-Perimeter Pivot)</span>
               </div>
-              <p className="font-sans text-sm text-[#99999F] leading-relaxed">
-                Before enacting isolation policies, ØMEN calculates the exact blast-radius reduction and connectivity preservation, allowing defensive teams to quarantine compromised assets with mathematical certainty.
-              </p>
+              <div className="flex justify-between items-center p-2 bg-[#101013] border border-crimson/30 rounded">
+                <span className="text-muted">Consensus Verdict:</span>
+                <span className="text-crimson font-bold">STAGE 2 INTRUSION (98.2% CONFIDENCE)</span>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Chapter 3 — Network Intelligence */}
+        <div className="story-reveal grid grid-cols-1 lg:grid-cols-12 gap-10 items-center p-8 sm:p-12 rounded-3xl bg-[#101013]/80 backdrop-blur-xl border border-white/10 hover:border-[#FF293F]/40 transition-all duration-300">
+          <div className="lg:col-span-5 space-y-3">
+            <span className="font-technical text-xs text-[#FF293F] tracking-widest uppercase font-bold">
+              CHAPTER 03 // GRAPH INTELLIGENCE
+            </span>
+            <h3 className="font-heading text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-[#F5F5F5]">
+              EVERY CONNECTION TELLS A STORY.
+            </h3>
+            <p className="font-sans text-sm text-[#99999F] leading-relaxed">
+              Representing the enterprise as a zero-trust state graph in NetworkX. Every host, proxy, and gateway carries dynamic risk scores, mapping real-time exposure and chokepoints along lateral movement pathways.
+            </p>
+            <div className="font-technical text-xs text-muted flex items-center gap-3 pt-2">
+              <span>SQLITE TOPOLOGY STORE</span>
+              <span>•</span>
+              <span className="text-emerald-400 font-bold">DYNAMIC ADJACENCY MATRIX</span>
+            </div>
+          </div>
+          <div className="lg:col-span-7 bg-[#050506] border border-white/10 rounded-2xl p-6 font-mono text-xs space-y-3">
+            <div className="flex justify-between text-muted text-[10px] pb-2 border-b border-white/5 uppercase">
+              <span>ZONE TOPOLOGY EXPOSURE</span>
+              <span className="text-chrome">24 MONITORED NODES</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+              <div className="p-3 bg-[#101013] border border-crimson/30 rounded-xl">
+                <span className="text-muted block mb-1">DMZ ZONE</span>
+                <span className="font-bold text-crimson text-sm block">srv-web-01</span>
+                <span className="text-[9px] text-muted">Compromised</span>
+              </div>
+              <div className="p-3 bg-[#101013] border border-amber-500/30 rounded-xl">
+                <span className="text-muted block mb-1">APP PROXY</span>
+                <span className="font-bold text-amber-400 text-sm block">srv-app-01</span>
+                <span className="text-[9px] text-muted">Chokepoint</span>
+              </div>
+              <div className="p-3 bg-[#101013] border border-white/10 rounded-xl">
+                <span className="text-muted block mb-1">DATABASE</span>
+                <span className="font-bold text-chrome text-sm block">db-prod-01</span>
+                <span className="text-[9px] text-muted">Crown Jewel</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chapter 4 — Prediction */}
+        <div className="story-reveal grid grid-cols-1 lg:grid-cols-12 gap-10 items-center p-8 sm:p-12 rounded-3xl bg-[#101013]/80 backdrop-blur-xl border border-white/10 hover:border-[#FF293F]/40 transition-all duration-300">
+          <div className="lg:col-span-5 space-y-3">
+            <span className="font-technical text-xs text-[#FF293F] tracking-widest uppercase font-bold">
+              CHAPTER 04 // ATTACK PATH FORECASTING
+            </span>
+            <h3 className="font-heading text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-[#F5F5F5]">
+              THE NEXT MOVE IS NOT INVISIBLE.
+            </h3>
+            <p className="font-sans text-sm text-[#99999F] leading-relaxed">
+              Synthesizing neural evidence with graph access controls to calculate plausible adversary traversal corridors. Ranked by risk and traversal velocity before attackers pivot.
+            </p>
+            <div className="font-technical text-xs text-secondary flex items-center gap-2 pt-2">
+              <span className="text-amber-400 font-bold">HYPOTHETICAL ROUTES</span>
+              <span>— NOT OBSERVED ACTIONS</span>
+            </div>
+          </div>
+          <div className="lg:col-span-7 bg-[#050506] border border-white/10 rounded-2xl p-6 font-mono text-xs space-y-3">
+            <div className="flex justify-between text-muted text-[10px] pb-2 border-b border-white/5 uppercase">
+              <span>RANKED CORRIDOR TRAJECTORY</span>
+              <span className="text-crimson font-bold">RISK: 89.4 / 100</span>
+            </div>
+            <div className="p-3 bg-[#101013] border border-crimson/40 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 bg-crimson/20 text-crimson font-bold rounded">RANK 1</span>
+                <span className="text-chrome font-bold">srv-web-01 ➔ srv-app-01 ➔ db-prod-01</span>
+              </div>
+              <span className="text-amber-400 font-bold">~22m</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Chapter 5 — Defense */}
+        <div className="story-reveal grid grid-cols-1 lg:grid-cols-12 gap-10 items-center p-8 sm:p-12 rounded-3xl bg-[#101013]/80 backdrop-blur-xl border border-white/10 hover:border-[#FF293F]/40 transition-all duration-300">
+          <div className="lg:col-span-5 space-y-3">
+            <span className="font-technical text-xs text-[#FF293F] tracking-widest uppercase font-bold">
+              CHAPTER 05 // AUTONOMOUS DEFENSE
+            </span>
+            <h3 className="font-heading text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-[#F5F5F5]">
+              CONTROL THE DAMAGE. PRESERVE THE SYSTEM.
+            </h3>
+            <p className="font-sans text-sm text-[#99999F] leading-relaxed">
+              Simulating device isolation, connection restriction, and session revocation in an isolated cloned graph. Quantifying blast-radius reduction and legitimate service availability prior to SecOps approval.
+            </p>
+            <div className="font-technical text-xs text-emerald-400 flex items-center gap-2 pt-2">
+              <span>ZERO RISK SANDBOX // NO PRODUCTION NETWORK MUTATIONS</span>
+            </div>
+          </div>
+          <div className="lg:col-span-7 bg-[#050506] border border-white/10 rounded-2xl p-6 font-mono text-xs space-y-3">
+            <div className="flex justify-between text-muted text-[10px] pb-2 border-b border-white/5 uppercase">
+              <span>SIMULATED CONTAINMENT VERDICT</span>
+              <span className="text-emerald-400 font-bold">+78.5% RISK MITIGATION</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-center text-[10px]">
+              <div className="p-3 bg-[#101013] border border-white/5 rounded-xl">
+                <span className="text-muted block mb-1">BLAST RADIUS BEFORE</span>
+                <span className="font-bold text-crimson text-lg line-through block">8 NODES</span>
+              </div>
+              <div className="p-3 bg-[#101013] border border-emerald-500/30 rounded-xl">
+                <span className="text-muted block mb-1">BLAST RADIUS AFTER</span>
+                <span className="font-bold text-emerald-400 text-lg block">2 NODES</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chapter 6 — Console Entry */}
+        <div className="story-reveal p-10 sm:p-14 rounded-3xl bg-gradient-to-b from-[#17171C] to-[#0E0E11] border border-white/15 text-center space-y-6">
+          <span className="font-technical text-xs text-[#FF293F] tracking-widest uppercase font-bold block">
+            CHAPTER 06 // SYSTEM DEPLOYMENT
+          </span>
+          <h3 className="font-heading text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
+            ENTER THE BLACKSITE.
+          </h3>
+          <p className="font-sans text-sm sm:text-base text-[#95959E] max-w-xl mx-auto leading-relaxed">
+            Transition directly from high-level intelligence presentation to the operational underground command workspace. All live modules, telemetry models, and forensic logs await.
+          </p>
+          <div className="pt-2 flex justify-center">
+            <button
+              onClick={() => navigate('/console')}
+              className="px-8 py-3.5 rounded-full bg-crimson hover:bg-bright-red text-white font-technical text-sm font-bold tracking-widest uppercase shadow-[0_0_30px_rgba(240,45,70,0.5)] transition-all duration-300 flex items-center gap-2 group"
+            >
+              <span>ACCESS SOC CONSOLE</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+            </button>
           </div>
         </div>
       </section>

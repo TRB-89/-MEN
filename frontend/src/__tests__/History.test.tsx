@@ -32,6 +32,7 @@ vi.mock('../services/api', () => ({
   api: {
     getIncidents: vi.fn(),
     getHistory: vi.fn(),
+    getAttackReplayTimeline: vi.fn().mockResolvedValue({ count: 0, timeline: [] }),
   },
   resolveApiBaseUrl: vi.fn(() => 'http://127.0.0.1:8000'),
 }));

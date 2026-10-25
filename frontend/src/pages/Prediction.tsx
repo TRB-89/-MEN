@@ -25,6 +25,7 @@ import {
   CriticalChokepoint 
 } from '../types';
 import { NetworkGraph } from '../components/network/NetworkGraph';
+import { Network3DGraph } from '../components/network/Network3DGraph';
 import { PathRankingPanel } from '../components/prediction/PathRankingPanel';
 import { AttackTimeline } from '../components/prediction/AttackTimeline';
 import { RiskExplanation } from '../components/prediction/RiskExplanation';
@@ -64,6 +65,7 @@ export const Prediction: React.FC = () => {
 
   // Active view tab: GRAPH vs SPLIT
   const [activeViewTab, setActiveViewTab] = useState<'GRAPH' | 'SPLIT'>('GRAPH');
+  const [graphViewMode, setGraphViewMode] = useState<'2D' | '3D'>('2D');
 
   // Initial load: fetch topology & critical crown-jewel assets
   useEffect(() => {
@@ -438,6 +440,26 @@ export const Prediction: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 font-mono text-[11px]">
+            {/* 2D / 3D Mode Toggle */}
+            <div className="flex bg-[#121218] border border-border p-0.5 rounded text-[10px]">
+              <button
+                onClick={() => setGraphViewMode('2D')}
+                className={`px-2 py-0.5 rounded font-bold ${
+                  graphViewMode === '2D' ? 'bg-crimson text-white' : 'text-muted hover:text-white'
+                }`}
+              >
+                2D FLOW
+              </button>
+              <button
+                onClick={() => setGraphViewMode('3D')}
+                className={`px-2 py-0.5 rounded font-bold ${
+                  graphViewMode === '3D' ? 'bg-crimson text-white' : 'text-muted hover:text-white'
+                }`}
+              >
+                3D SPATIAL
+              </button>
+            </div>
+
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#E2E2E5]" />
               <span className="text-muted text-[10px]">SOURCE</span>
@@ -454,11 +476,21 @@ export const Prediction: React.FC = () => {
         </div>
 
         <div className="h-[420px] w-full relative">
-          <NetworkGraph
-            nodes={flowNodes}
-            edges={flowEdges}
-            showMinimap={true}
-          />
+          {graphViewMode === '2D' ? (
+            <NetworkGraph
+              nodes={flowNodes}
+              edges={flowEdges}
+              showMinimap={true}
+            />
+          ) : (
+            <Network3DGraph
+              nodes={topology?.nodes || []}
+              edges={topology?.edges || []}
+              highlightedPathNodes={selectedPath?.nodes || []}
+              selectedNodeId={selectedPath?.nodes[0] || null}
+              className="w-full h-full"
+            />
+          )}
         </div>
       </OmenPanel>
 

@@ -4,21 +4,24 @@ import {
   RefreshCw, 
   Download, 
   Clock, 
-  Layers
+  Layers,
+  Activity
 } from 'lucide-react';
 import { api, resolveApiBaseUrl } from '../services/api';
 import { IncidentRecord } from '../types';
 import { IncidentTimeline } from '../components/incidents/IncidentTimeline';
 import { IncidentArchive } from '../components/incidents/IncidentArchive';
 import { IncidentDetails } from '../components/incidents/IncidentDetails';
+import { AttackReplayEngine, TimelineReplayItem } from '../components/incidents/AttackReplayEngine';
 import { OmenSectionHeader } from '../components/ui/OmenSectionHeader';
 import { OmenButton } from '../components/ui/OmenButton';
 
 export const History: React.FC = () => {
   const [incidents, setIncidents] = useState<IncidentRecord[]>([]);
+  const [timelineEvents, setTimelineEvents] = useState<TimelineReplayItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'timeline' | 'archive'>('timeline');
+  const [viewMode, setViewMode] = useState<'timeline' | 'archive' | 'replay'>('timeline');
 
   // Selected incident details
   const [selectedIncident, setSelectedIncident] = useState<IncidentRecord | null>(null);
@@ -28,14 +31,24 @@ export const History: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await api.getIncidents(undefined, undefined, 50, 0);
-      if (res && res.incidents) {
-        setIncidents(res.incidents);
-        if (res.incidents.length > 0 && !selectedIncident) {
-          setSelectedIncident(res.incidents[0]);
+      const [incRes, timelineRes] = await Promise.allSettled([
+        api.getIncidents(undefined, undefined, 50, 0),
+        api.getAttackReplayTimeline(),
+      ]);
+
+      if (incRes.status === 'fulfilled' && incRes.value && incRes.value.incidents) {
+        setIncidents(incRes.value.incidents);
+        if (incRes.value.incidents.length > 0 && !selectedIncident) {
+          setSelectedIncident(incRes.value.incidents[0]);
         }
       } else {
         setIncidents([]);
+      }
+
+      if (timelineRes.status === 'fulfilled' && timelineRes.value && timelineRes.value.timeline) {
+        setTimelineEvents(timelineRes.value.timeline);
+      } else {
+        setTimelineEvents([]);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load incident memory records.');
@@ -75,13 +88,24 @@ export const History: React.FC = () => {
     <div className="space-y-6 animate-fade-in pb-16">
       {/* 1. Module Header */}
       <OmenSectionHeader 
-        moduleNumber="MODULE 05"
+        moduleNumber="05"
         tag="IMMUTABLE FORENSIC ARCHIVE"
         title="NOTHING GOES UNRECORDED."
         description="Cryptographically organized security incident archives. Full chronological attack timeline, multi-model score retention, MITRE ATT&CK correlation, and exportable JSON audit dossiers."
         actions={
           <div className="flex items-center gap-3">
             <div className="flex bg-surface border border-border p-0.5 font-mono text-xs">
+              <button
+                onClick={() => setViewMode('replay')}
+                className={`px-3 py-1 flex items-center gap-1.5 transition-colors ${
+                  viewMode === 'replay' 
+                    ? 'bg-crimson/20 text-crimson font-bold' 
+                    : 'text-muted hover:text-chrome'
+                }`}
+              >
+                <Activity className="w-3.5 h-3.5" />
+                <span>ATTACK REPLAY</span>
+              </button>
               <button
                 onClick={() => setViewMode('timeline')}
                 className={`px-3 py-1 flex items-center gap-1.5 transition-colors ${
@@ -91,7 +115,7 @@ export const History: React.FC = () => {
                 }`}
               >
                 <Clock className="w-3.5 h-3.5" />
-                <span>TIMELINE</span>
+                <span>CHRONOLOGY</span>
               </button>
               <button
                 onClick={() => setViewMode('archive')}
@@ -128,32 +152,56 @@ export const History: React.FC = () => {
         }
       />
 
-      {/* 2. Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7">
-          {viewMode === 'timeline' ? (
-            <IncidentTimeline 
-              incidents={incidents}
-              selectedId={selectedIncident?.id}
-              onSelectIncident={setSelectedIncident}
-            />
-          ) : (
-            <IncidentArchive 
-              incidents={incidents}
-              selectedId={selectedIncident?.id}
-              onSelectIncident={setSelectedIncident}
-              onExportDossier={handleExportJson}
-            />
-          )}
-        </div>
-
-        <div className="lg:col-span-5">
-          <IncidentDetails 
-            incident={selectedIncident}
-            onClose={() => setSelectedIncident(null)}
+      {/* 2. Attack Replay Engine or Timeline/Archive Grid */}
+      {viewMode === 'replay' ? (
+        <div className="space-y-6">
+          <AttackReplayEngine 
+            timeline={timelineEvents}
           />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-7">
+              <IncidentTimeline 
+                incidents={incidents}
+                selectedId={selectedIncident?.id}
+                onSelectIncident={setSelectedIncident}
+              />
+            </div>
+            <div className="lg:col-span-5">
+              <IncidentDetails 
+                incident={selectedIncident}
+                onClose={() => setSelectedIncident(null)}
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7">
+            {viewMode === 'timeline' ? (
+              <IncidentTimeline 
+                incidents={incidents}
+                selectedId={selectedIncident?.id}
+                onSelectIncident={setSelectedIncident}
+              />
+            ) : (
+              <IncidentArchive 
+                incidents={incidents}
+                selectedId={selectedIncident?.id}
+                onSelectIncident={setSelectedIncident}
+                onExportDossier={handleExportJson}
+              />
+            )}
+          </div>
+
+          <div className="lg:col-span-5">
+            <IncidentDetails 
+              incident={selectedIncident}
+              onClose={() => setSelectedIncident(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

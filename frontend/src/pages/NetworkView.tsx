@@ -17,6 +17,7 @@ import {
 import { api } from '../services/api';
 import { NetworkGraphData, NetworkNode } from '../types';
 import { NetworkGraph } from '../components/network/NetworkGraph';
+import { Network3DGraph } from '../components/network/Network3DGraph';
 import { AssetInspector } from '../components/network/AssetInspector';
 import { TopologyControls } from '../components/network/TopologyControls';
 import { DetectionCorrelationPanel } from '../components/network/DetectionCorrelationPanel';
@@ -40,6 +41,7 @@ export const NetworkView: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [rightPanelTab, setRightPanelTab] = useState<'inspector' | 'correlation'>('inspector');
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(true);
+  const [graphViewMode, setGraphViewMode] = useState<'2D' | '3D'>('2D');
 
   // React Query Hooks
   const {
@@ -273,8 +275,28 @@ export const NetworkView: React.FC = () => {
           </p>
         </div>
 
-        {/* Action & Connectivity Telemetry */}
+        {/* Action & Connectivity Telemetry & 2D/3D Mode Toggle */}
         <div className="flex items-center gap-3">
+          {/* 2D / 3D Exploration Mode Toggle */}
+          <div className="flex bg-[#121218] border border-zinc-800 p-0.5 font-mono text-xs">
+            <button
+              onClick={() => setGraphViewMode('2D')}
+              className={`px-3 py-1 flex items-center gap-1.5 transition-colors font-bold ${
+                graphViewMode === '2D' ? 'bg-crimson/20 text-crimson' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              2D TOPOLOGY
+            </button>
+            <button
+              onClick={() => setGraphViewMode('3D')}
+              className={`px-3 py-1 flex items-center gap-1.5 transition-colors font-bold ${
+                graphViewMode === '3D' ? 'bg-crimson/20 text-crimson' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              3D EXPLORATION
+            </button>
+          </div>
+
           <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#121218] border border-zinc-800 text-xs font-mono">
             <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
             <span className="text-zinc-400">GRAPH SYNC:</span>
@@ -320,15 +342,26 @@ export const NetworkView: React.FC = () => {
 
       {/* 3. Main Workspace: Full-Width Graph Canvas + Dynamic Side Inspector */}
       <div className="flex-1 relative flex overflow-hidden">
-        {/* Full-Width Canvas */}
+        {/* Full-Width Canvas: 2D vs 3D */}
         <div className="flex-1 h-full relative">
-          <NetworkGraph
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            className="w-full h-full"
-          />
+          {graphViewMode === '2D' ? (
+            <NetworkGraph
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              className="w-full h-full"
+            />
+          ) : (
+            <Network3DGraph
+              nodes={topologyData?.nodes || []}
+              edges={topologyData?.edges || []}
+              selectedNodeId={selectedNode?.id}
+              onSelectNode={(node) => setSelectedNodeId(node.id)}
+              isolatedNodes={isolatedNodes}
+              className="w-full h-full"
+            />
+          )}
 
           {/* Quick Toggle Button for Right Side Panel */}
           <button

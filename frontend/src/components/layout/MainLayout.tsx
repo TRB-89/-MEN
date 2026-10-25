@@ -35,8 +35,8 @@ export const MainLayout: React.FC = () => {
         };
       case '/defense':
         return {
-          title: 'NEUTRALIZE THE INEVITABLE',
-          subtitle: '04 / DEFENSE SIMULATION — Zero-Trust Quarantine & Blast Radius',
+          title: 'CONTROL THE DAMAGE. PRESERVE THE SYSTEM.',
+          subtitle: '04 / AUTONOMOUS DEFENSE — Sandboxed Containment & Multi-Objective Mitigation',
         };
       case '/history':
       case '/incidents':

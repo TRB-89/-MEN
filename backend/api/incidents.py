@@ -107,21 +107,120 @@ def update_incident(incident_id: str, payload: IncidentUpdate, db: Session = Dep
     return inc.to_dict()
 
 
-@router.get("/simulations/history")
-def list_simulation_runs(limit: int = Query(20, ge=1, le=100), db: Session = Depends(get_db)):
-    """List historical autonomous defense simulation runs."""
-    runs = db.query(SimulationRun).order_by(SimulationRun.timestamp.desc()).limit(limit).all()
+from backend.database.db import get_db, Incident, SecurityEvent, SimulationRun, AttackPathPredictionRecord, DefenseSimulationRecord
+
+
+@router.get("/export/json")
+def export_incidents_json(db: Session = Depends(get_db)):
+    """Export complete immutable forensic dossier of incidents and security events."""
+    incidents = db.query(Incident).order_by(Incident.created_at.desc()).all()
+    events = db.query(SecurityEvent).order_by(SecurityEvent.timestamp.desc()).limit(100).all()
+    simulations = db.query(DefenseSimulationRecord).order_by(DefenseSimulationRecord.created_at.desc()).limit(50).all()
+
     return {
-        "count": len(runs),
-        "simulations": [r.to_dict() for r in runs],
+        "export_metadata": {
+            "system": "ØMEN // BLACKSITE IMMUTABLE FORENSIC ARCHIVE",
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "incidents_count": len(incidents),
+            "events_count": len(events),
+            "simulations_count": len(simulations),
+        },
+        "incidents": [inc.to_dict() for inc in incidents],
+        "security_events": [e.to_dict() for e in events],
+        "defense_simulations": [s.to_dict() for s in simulations],
     }
 
 
-@router.get("/events/history")
-def list_security_events(limit: int = Query(50, ge=1, le=100), db: Session = Depends(get_db)):
-    """List logged network anomaly and threat events."""
-    events = db.query(SecurityEvent).order_by(SecurityEvent.timestamp.desc()).limit(limit).all()
+@router.get("/timeline/replay")
+def get_attack_replay_timeline(
+    incident_id: Optional[str] = Query(None, description="Optional incident ID filter"),
+    db: Session = Depends(get_db),
+):
+    """Retrieve chronologically ordered events for the interactive Attack Replay Timeline."""
+    events = db.query(SecurityEvent).order_by(SecurityEvent.timestamp.asc()).limit(100).all()
+    predictions = db.query(AttackPathPredictionRecord).order_by(AttackPathPredictionRecord.timestamp.asc()).limit(20).all()
+    simulations = db.query(DefenseSimulationRecord).order_by(DefenseSimulationRecord.created_at.asc()).limit(20).all()
+
+    timeline_items = []
+
+    # Map security events
+    for e in events:
+        parsed_evidence = {}
+        try:
+            parsed_evidence = json.loads(e.supporting_evidence) if e.supporting_evidence else {}
+        except Exception:
+            pass
+
+        timeline_items.append({
+            "id": f"EVT-{e.id}",
+            "event_type": "OBSERVED_EVENT",
+            "timestamp": e.timestamp.isoformat() if e.timestamp else datetime.now(timezone.utc).isoformat(),
+            "source_asset": e.asset_id or "srv-web-01",
+            "related_assets": [e.asset_id] if e.asset_id else ["srv-web-01"],
+            "severity": e.severity,
+            "threat_status": e.threat_status,
+            "category": e.attack_category or "Anomaly / Intrusion",
+            "decision_rule": e.decision_rule or "Neural Consensus",
+            "rf_probability": e.rf_probability,
+            "mlp_probability": e.mlp_probability,
+            "anomaly_index": e.anomaly_index,
+            "evidence": parsed_evidence,
+            "mitre_technique": "T1190 - Exploit Public-Facing Application" if e.severity == "CRITICAL" else "T1046 - Network Service Discovery",
+        })
+
+    # Map attack predictions
+    for p in predictions:
+        parsed_paths = []
+        try:
+            parsed_paths = json.loads(p.candidate_paths) if p.candidate_paths else []
+        except Exception:
+            pass
+
+        timeline_items.append({
+            "id": f"PRED-{p.prediction_id}",
+            "event_type": "PREDICTED_PATH",
+            "timestamp": p.timestamp.isoformat() if p.timestamp else datetime.now(timezone.utc).isoformat(),
+            "source_asset": p.source_asset_id,
+            "related_assets": [p.source_asset_id, p.target_asset_id] if p.target_asset_id else [p.source_asset_id],
+            "severity": "HIGH",
+            "threat_status": "HYPOTHETICAL_CORRIDOR",
+            "category": "Attack Traversal Forecast",
+            "decision_rule": f"Graph Traversal v{p.scoring_version}",
+            "rf_probability": None,
+            "mlp_probability": None,
+            "anomaly_index": p.highest_risk_score,
+            "evidence": {"total_paths": p.total_paths, "highest_risk": p.highest_risk_score, "paths": parsed_paths},
+            "mitre_technique": "T1021 - Lateral Movement",
+        })
+
+    # Map defense simulations
+    for s in simulations:
+        timeline_items.append({
+            "id": f"SIM-{s.simulation_id}",
+            "event_type": "SIMULATED_DEFENSE",
+            "timestamp": s.created_at.isoformat() if s.created_at else datetime.now(timezone.utc).isoformat(),
+            "source_asset": s.entry_node,
+            "related_assets": [s.target_entity, s.crown_jewel_target] if s.crown_jewel_target else [s.target_entity],
+            "severity": "LOW",
+            "threat_status": "CONTAINMENT_SIMULATED",
+            "category": f"Defense Action: {s.action_type}",
+            "decision_rule": f"Risk Reduction: {s.risk_reduction_pct:.1f}%",
+            "rf_probability": None,
+            "mlp_probability": None,
+            "anomaly_index": s.risk_score_after,
+            "evidence": {
+                "action_type": s.action_type,
+                "target_entity": s.target_entity,
+                "net_utility": s.net_utility_score,
+                "approval_status": s.approval_status,
+            },
+            "mitre_technique": "M1037 - Filter Network Traffic",
+        })
+
+    # Sort deterministically by timestamp
+    timeline_items.sort(key=lambda x: x["timestamp"])
+
     return {
-        "count": len(events),
-        "events": [e.to_dict() for e in events],
+        "count": len(timeline_items),
+        "timeline": timeline_items,
     }
