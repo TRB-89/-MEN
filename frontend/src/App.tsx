@@ -11,10 +11,19 @@ import { History } from './pages/History';
 import { System } from './pages/System';
 import { BackendProvider } from './services/BackendContext';
 
+import { PrecisionCursor } from './components/common/PrecisionCursor';
+import { CommandPalette } from './components/common/CommandPalette';
+
 export const App: React.FC = () => {
   return (
     <BackendProvider>
       <BrowserRouter>
+        {/* Elite Cyberpunk Desktop Precision Cursor */}
+        <PrecisionCursor />
+
+        {/* Global Ctrl+K Command Palette */}
+        <CommandPalette />
+
         <Routes>
           {/* 1. Full-Viewport Cinematic Landing Page */}
           <Route path="/" element={<LandingPage />} />

@@ -19,9 +19,11 @@ import {
   Sparkles,
   Terminal,
   Layers,
-  Flame
+  Flame,
+  Search
 } from 'lucide-react';
-import { OmenJellyfishEntity } from '../components/hero/OmenJellyfishEntity';
+import { OmenJellyfishEntity, OmenEntityState } from '../components/hero/OmenJellyfishEntity';
+import { MagneticButton } from '../components/common/MagneticButton';
 import { api } from '../services/api';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -49,6 +51,15 @@ export const LandingPage: React.FC = () => {
     defenseSimulations: 'READY // MOD 04',
     backendOnline: false,
   });
+
+  // Dynamic 3D Neural Entity State based on live backend telemetry
+  const entityState: OmenEntityState = (() => {
+    if (!metrics.backendOnline) return 'IDLE';
+    const threats = parseInt(metrics.threatsDetected, 10);
+    if (!isNaN(threats) && threats > 0) return 'ELEVATED_RISK';
+    if (metrics.modelReadiness && metrics.modelReadiness.includes('ONLINE')) return 'ANALYZING';
+    return 'IDLE';
+  })();
 
   // Animation Refs
   const pageContainerRef = useRef<HTMLDivElement>(null);
@@ -383,11 +394,24 @@ export const LandingPage: React.FC = () => {
           </button>
         </nav>
 
-        {/* Right Action: ENTER CONSOLE */}
-        <div className="flex items-center gap-4 pointer-events-auto">
+        {/* Right Action: CMD PALETTE & ENTER CONSOLE */}
+        <div className="flex items-center gap-3 pointer-events-auto">
+          <button
+            onClick={() => {
+              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+            }}
+            className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#101013]/90 hover:bg-[#19191D] text-[#919198] hover:text-[#E2E2E5] border border-[#E2E2E5]/15 font-technical text-xs tracking-wider transition-all duration-200"
+            title="Search Blacksite Command Palette (Ctrl+K)"
+          >
+            <Search className="w-3.5 h-3.5 text-[#F02D46]" />
+            <kbd className="px-1.5 py-0.2 bg-[#050506] border border-[#E2E2E5]/20 text-[9px] text-[#E2E2E5] rounded">
+              Ctrl K
+            </kbd>
+          </button>
+
           <button
             onClick={() => navigate('/console')}
-            className="px-6 py-2.5 rounded-full bg-[#161619]/90 hover:bg-[#D10E24] text-[#F5F5F5] hover:text-white border border-[#DCDCE0]/20 hover:border-[#FF293F] font-technical text-xs font-semibold tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-[0_0_25px_rgba(255,41,63,0.5)] flex items-center gap-2 group"
+            className="px-6 py-2.5 rounded-full bg-[#101013]/90 hover:bg-[#B10F29] text-[#F5F5F5] hover:text-white border border-[#E2E2E5]/20 hover:border-[#F02D46] font-technical text-xs font-semibold tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-[0_0_25px_rgba(240,45,70,0.5)] flex items-center gap-2 group"
           >
             <span>ENTER CONSOLE</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -446,20 +470,23 @@ export const LandingPage: React.FC = () => {
 
             {/* Buttons (EXPLORE ØMEN & LAUNCH CONSOLE) */}
             <div ref={ctaRef} className="flex flex-wrap items-center gap-4 pt-1">
-              <button
+              <MagneticButton
+                variant="primary"
+                size="md"
                 onClick={() => document.getElementById('architecture')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-7 py-3 rounded-full bg-[#F5F5F5] hover:bg-white text-[#050505] font-technical text-xs font-bold tracking-wider transition-all duration-300 shadow-[0_4px_24px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
               >
                 EXPLORE ØMEN
-              </button>
+              </MagneticButton>
 
-              <button
+              <MagneticButton
+                variant="secondary"
+                size="md"
                 onClick={() => navigate('/console')}
-                className="px-7 py-3 rounded-full bg-[#161619] hover:bg-[#D10E24] text-[#F5F5F5] hover:text-white border border-[#DCDCE0]/20 hover:border-[#FF293F] font-technical text-xs font-bold tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-[0_0_30px_rgba(255,41,63,0.4)] flex items-center gap-2 group hover:scale-105 active:scale-95"
+                className="group"
               >
                 <span>LAUNCH CONSOLE</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </MagneticButton>
             </div>
 
             {/* Fine Technical Annotations */}
@@ -485,7 +512,7 @@ export const LandingPage: React.FC = () => {
           {/* Center Column (Cols 6–8): Unclipped 3D Neural Jellyfish Entity */}
           <div className="lg:col-span-4 relative flex items-center justify-center min-h-[460px] sm:min-h-[540px] lg:min-h-[700px] z-10 pointer-events-none overflow-visible">
             <div ref={jellyfishContainerRef} className="w-full h-full relative flex items-center justify-center overflow-visible">
-              <OmenJellyfishEntity className="w-full h-[520px] sm:h-[620px] lg:h-[720px]" />
+              <OmenJellyfishEntity className="w-full h-[520px] sm:h-[620px] lg:h-[720px]" entityState={entityState} />
             </div>
           </div>
 

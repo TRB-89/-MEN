@@ -62,23 +62,23 @@ const CyberDeviceNode: React.FC<{
     }
   };
 
-  // Border & background styling based on state (Section 8 — Dark graphite canvas, red illuminated suspicious, chrome normal)
-  let cardStyle = 'border border-[#DCDCE0]/15 bg-[#161619]/90 text-[#F5F5F5] hover:border-[#DCDCE0]/40 shadow-[0_4px_16px_rgba(0,0,0,0.6)]';
+  // Border & background styling based on state (Blacksite theme: Dark graphite canvas, red illuminated suspicious, chrome normal)
+  let cardStyle = 'border border-[#E2E2E5]/15 bg-[#101013]/90 text-[#F5F5F5] hover:border-[#E2E2E5]/40 shadow-[0_4px_16px_rgba(0,0,0,0.6)]';
   if (isIsolated) {
-    cardStyle = 'border-dashed border-[#99999F]/30 bg-[#0D0D0F]/80 opacity-50 text-[#99999F]';
+    cardStyle = 'border-dashed border-[#919198]/30 bg-[#050506]/80 opacity-50 text-[#919198]';
   } else if (isCompromised) {
-    cardStyle = 'border-2 border-[#FF293F] bg-[#5C0614]/40 text-white shadow-[0_0_25px_rgba(255,41,63,0.45)] animate-pulse';
+    cardStyle = 'border-2 border-[#F02D46] bg-[#5C0614]/40 text-white shadow-[0_0_25px_rgba(240,45,70,0.45)] animate-pulse';
   } else if (isSuspicious) {
     cardStyle = 'border-2 border-[#F59E0B]/80 bg-[#291800]/50 text-amber-100 shadow-[0_0_18px_rgba(245,158,11,0.3)]';
   } else if (isCritical) {
-    cardStyle = 'border border-[#DCDCE0]/40 bg-[#1A1A1E] text-white shadow-[0_0_15px_rgba(220,220,224,0.1)]';
+    cardStyle = 'border border-[#E2E2E5]/40 bg-[#19191D] text-white shadow-[0_0_15px_rgba(226,226,229,0.1)]';
   }
 
   return (
     <div
       onClick={() => data.onSelect && data.onSelect(data)}
       className={`relative px-4 py-3 min-w-[190px] max-w-[220px] rounded-2xl transition-all duration-300 cursor-pointer font-technical text-xs backdrop-blur-md ${cardStyle} ${
-        selected ? 'ring-2 ring-[#FF293F] shadow-[0_0_30px_rgba(255,41,63,0.6)]' : ''
+        selected ? 'ring-2 ring-[#F02D46] shadow-[0_0_30px_rgba(240,45,70,0.6)]' : ''
       }`}
     >
       {/* Corner notch accent */}
@@ -178,7 +178,7 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
   const nodeTypes = useMemo(() => ({ cyberDevice: CyberDeviceNode }), []);
 
   return (
-    <div className={`w-full h-full relative overflow-hidden bg-[#050505] select-none ${className}`}>
+    <div className={`w-full h-full relative overflow-hidden bg-[#050506] select-none ${className}`}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -188,20 +188,20 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
         fitView
         minZoom={minZoom}
         maxZoom={maxZoom}
-        className="bg-[#050505]"
+        className="bg-[#050506]"
       >
-        <Background color="#161619" gap={28} size={1.2} />
-        <Controls className="!bg-[#161619] !border !border-[#DCDCE0]/15 !rounded-xl !overflow-hidden !fill-[#DCDCE0] !text-[#DCDCE0]" />
+        <Background color="#101013" gap={28} size={1.2} />
+        <Controls className="!bg-[#101013] !border !border-[#E2E2E5]/15 !rounded-xl !overflow-hidden !fill-[#E2E2E5] !text-[#E2E2E5]" />
         {showMinimap && (
           <MiniMap
             nodeColor={(node) => {
-              if (node.data?.security_status === 'COMPROMISED' || node.data?.compromised) return '#FF293F';
+              if (node.data?.security_status === 'COMPROMISED' || node.data?.compromised) return '#F02D46';
               if (node.data?.security_status === 'SUSPICIOUS') return '#F59E0B';
               if (node.data?.isolated) return '#52525B';
-              return '#161619';
+              return '#101013';
             }}
-            maskColor="rgba(5, 5, 5, 0.85)"
-            className="!bg-[#0D0D0F] !border !border-[#DCDCE0]/15 !rounded-xl !bottom-4 !right-4"
+            maskColor="rgba(5, 5, 6, 0.85)"
+            className="!bg-[#101013] !border !border-[#E2E2E5]/15 !rounded-xl !bottom-4 !right-4"
           />
         )}
       </ReactFlow>

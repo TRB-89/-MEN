@@ -42,13 +42,13 @@ export const RecentEvents: React.FC<RecentEventsProps> = ({ events }) => {
             No active threat events detected in recent telemetry.
           </div>
         ) : (
-          events.slice(0, 5).map((ev) => {
+          events.slice(0, 5).map((ev, index) => {
             const isMalicious = ev.threat_status === 'MALICIOUS';
             const isSuspicious = ev.threat_status === 'SUSPICIOUS';
 
             return (
               <div
-                key={ev.detection_id}
+                key={`${ev.detection_id || 'ev'}-${index}`}
                 onClick={() => navigate('/detection')}
                 className="p-3 bg-background hover:bg-surface-elevated border border-border transition-colors cursor-pointer flex items-center justify-between gap-3 font-mono text-xs"
               >

@@ -2,8 +2,11 @@ import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
+export type OmenEntityState = 'IDLE' | 'ANALYZING' | 'ELEVATED_RISK' | 'SIMULATION';
+
 interface JellyfishProps {
   reducedMotion?: boolean;
+  entityState?: OmenEntityState;
 }
 
 /**
@@ -54,7 +57,7 @@ const ResponsiveCameraController: React.FC = () => {
  * - Inner glowing neural core with concentric cybernetic rings and radial canal lines
  * - Drifting bioluminescent particles
  */
-const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => {
+const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false, entityState = 'IDLE' }) => {
   const rootGroupRef = useRef<THREE.Group>(null);
   const bellMeshRef = useRef<THREE.Mesh>(null);
   const nucleusRef = useRef<THREE.Mesh>(null);
@@ -181,7 +184,6 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
 
   // --- Construct Procedural Organic Scalloped Bell Geometry ---
   const { bellGeom, innerBellGeom, basePositions } = useMemo(() => {
-    // 64 radial segments, 40 height rings
     const radialSegs = 64;
     const heightSegs = 36;
     const geom = new THREE.BufferGeometry();
@@ -192,16 +194,13 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
     const indices: number[] = [];
 
     for (let yIdx = 0; yIdx <= heightSegs; yIdx++) {
-      const v = yIdx / heightSegs; // 0 at apex, 1 at rim
-      // Organic bell parabolic curve
+      const v = yIdx / heightSegs;
       const y = 1.35 * (1 - Math.pow(v, 1.35));
-      // Bell radius increases smoothly toward the rim with flaring
       const baseR = 1.45 * Math.pow(Math.sin(v * Math.PI * 0.5), 0.78) * (1 + 0.12 * Math.pow(v, 3));
 
       for (let rIdx = 0; rIdx <= radialSegs; rIdx++) {
         const u = rIdx / radialSegs;
         const theta = u * Math.PI * 2;
-        // 16 gentle organic scallops on the margin lappets
         const scallop = 1 + 0.035 * Math.pow(v, 2.5) * Math.cos(16 * theta);
         const r = baseR * scallop;
 
@@ -213,7 +212,6 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
       }
     }
 
-    // Build faces
     for (let yIdx = 0; yIdx < heightSegs; yIdx++) {
       for (let rIdx = 0; rIdx < radialSegs; rIdx++) {
         const p1 = yIdx * (radialSegs + 1) + rIdx;
@@ -236,7 +234,6 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
     innerGeom.setIndex(indices);
     innerGeom.computeVertexNormals();
 
-    // Cache initial vertex positions for pulsation animation
     const basePositionsCopy = new Float32Array(posArray);
 
     return { bellGeom: geom, innerBellGeom: innerGeom, basePositions: basePositionsCopy };
@@ -298,7 +295,6 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
     for (let s = 0; s < strandCount; s++) {
       const angle = (s / strandCount) * Math.PI * 2;
       const radius = 1.42 + (Math.sin(s * 3.7) * 0.08);
-      // Varied lengths: between 2.8 and 4.2 units so tentacles never clip camera view
       const length = 2.8 + (Math.sin(s * 1.5) + 1) * 0.65;
       const speed = 1.1 + Math.sin(s * 2.3) * 0.3;
       const phase = s * 0.35;
@@ -313,7 +309,7 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
     return { filamentGeom: geom, strandData: data };
   }, []);
 
-  // --- Construct 4 Central Frilled Oral Arms ---
+  // --- Construct 6 Central Frilled Oral Arms ---
   const oralCount = 6;
   const vertsPerOral = 36;
   const { oralGeom, oralData } = useMemo(() => {
@@ -389,19 +385,42 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
     particleMaterial,
   ]);
 
-  // --- Animation Loop ---
+  // --- Animation Loop with State-Responsive Behavioral Modes ---
   useFrame((state, delta) => {
     const time = state.clock.getElapsedTime();
 
-    // 1. Root group organic swimming translation & gentle cursor parallax
+    // Application state parameters
+    let speedMult = 1.0;
+    let emissivePulse = 2.4 + Math.sin(time * 2.7) * 0.8;
+    let ringRotSpeed = 0.15;
+    let pulseFrequency = 1.35;
+    let contractDepth = 0.14;
+
+    if (entityState === 'ANALYZING') {
+      speedMult = 1.35;
+      pulseFrequency = 2.2;
+      emissivePulse = 3.0 + Math.sin(time * 5.5) * 1.0;
+      ringRotSpeed = 0.45;
+    } else if (entityState === 'ELEVATED_RISK') {
+      speedMult = 1.7;
+      pulseFrequency = 2.8;
+      contractDepth = 0.22;
+      emissivePulse = 3.8 + Math.sin(time * 6.5) * 1.4;
+      ringRotSpeed = 0.65;
+    } else if (entityState === 'SIMULATION') {
+      speedMult = 1.25;
+      pulseFrequency = 1.6;
+      emissivePulse = 2.9 + Math.sin(time * 3.5) * 0.9;
+      ringRotSpeed = 0.3;
+    }
+
+    // 1. Root group organic swimming translation & cursor parallax
     if (rootGroupRef.current) {
       if (!reducedMotion) {
-        // Natural biological propulsion: quick contraction followed by slow glide
-        const swimCycle = Math.sin(time * 1.35);
-        const floatY = 0.05 + swimCycle * 0.12;
+        const swimCycle = Math.sin(time * pulseFrequency);
+        const floatY = 0.05 + swimCycle * (0.12 * speedMult);
         rootGroupRef.current.position.y = floatY;
 
-        // Subtle cursor parallax
         const targetRotX = mouseRef.current.y * 0.12;
         const targetRotY = mouseRef.current.x * 0.16 + Math.sin(time * 0.4) * 0.05;
         rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(rootGroupRef.current.rotation.x, targetRotX, delta * 2.5);
@@ -415,9 +434,8 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
       const posArray = posAttr.array as Float32Array;
       const count = posAttr.count;
 
-      // Realistic pulse cycle: contraction is snappy, recovery is slow
-      const pulsePhase = Math.sin(time * 1.35);
-      const contractFactor = 1.0 - Math.max(0, pulsePhase) * 0.14 + Math.min(0, pulsePhase) * 0.06;
+      const pulsePhase = Math.sin(time * pulseFrequency);
+      const contractFactor = 1.0 - Math.max(0, pulsePhase) * contractDepth + Math.min(0, pulsePhase) * 0.06;
       const apexPush = Math.max(0, pulsePhase) * 0.12;
 
       for (let i = 0; i < count; i++) {
@@ -426,7 +444,6 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
         const baseY = basePositions[i3 + 1];
         const baseZ = basePositions[i3 + 2];
 
-        // Apex pushes up slightly while rim contracts inwards
         const heightRatio = Math.max(0, baseY / 1.35);
         const rimInfluence = Math.pow(1 - heightRatio, 1.2);
 
@@ -439,50 +456,64 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
 
     // 3. Inner Nucleus Pulse & Cybernetic Rings Rotation
     if (nucleusRef.current) {
-      const pulse = 1.0 + Math.sin(time * 2.7) * 0.08;
+      const pulse = 1.0 + Math.sin(time * (pulseFrequency * 2)) * 0.08;
       nucleusRef.current.scale.set(pulse, pulse, pulse);
       if (!reducedMotion) {
-        nucleusMaterial.emissiveIntensity = 2.4 + Math.sin(time * 2.7) * 0.8;
+        nucleusMaterial.emissiveIntensity = emissivePulse;
+        if (entityState === 'ELEVATED_RISK') {
+          nucleusMaterial.emissive.set('#F02D46');
+        } else {
+          nucleusMaterial.emissive.set('#FF293F');
+        }
       }
     }
 
     if (ringsRef.current && !reducedMotion) {
-      ringsRef.current.rotation.z += delta * 0.15;
+      ringsRef.current.rotation.z += delta * ringRotSpeed;
     }
 
-    // 4. Update 48 Marginal Filaments (Physics Wave Propagation)
+    // 4. Update 48 Marginal Filaments (Physics Wave Propagation + Simulation Pulse Sequence)
     if (filamentsRef.current && !reducedMotion) {
       const posAttr = filamentsRef.current.geometry.attributes.position as THREE.BufferAttribute;
       const posArray = posAttr.array as Float32Array;
       let idx = 0;
 
-      // Bell rim contraction offset for filament anchors
-      const pulsePhase = Math.sin(time * 1.35);
-      const rimContract = 1.0 - Math.max(0, pulsePhase) * 0.14 + Math.min(0, pulsePhase) * 0.06;
+      const pulsePhase = Math.sin(time * pulseFrequency);
+      const rimContract = 1.0 - Math.max(0, pulsePhase) * contractDepth + Math.min(0, pulsePhase) * 0.06;
 
       for (let s = 0; s < strandCount; s++) {
         const sd = strandData[s];
         const currentRadius = sd.radius * rimContract;
 
         for (let v = 0; v < vertsPerStrand - 1; v++) {
-          // Point v
           const t0 = v / (vertsPerStrand - 1);
           const y0 = 0.05 - t0 * sd.length;
-          // Fluid wave superposition with t^1.3 dampening at rim anchor
-          const waveAmp0 = sd.amp * Math.pow(t0, 1.3);
-          const waveX0 = Math.sin(time * sd.speed + t0 * sd.freq * 4.5 + sd.phase) * waveAmp0;
-          const waveZ0 = Math.cos(time * sd.speed * 0.85 + t0 * sd.freq * 3.8 + sd.phase) * waveAmp0;
+          
+          // In SIMULATION state: sequential traveling wave pulse along the tendrils
+          let simOffset0 = 0;
+          if (entityState === 'SIMULATION') {
+            simOffset0 = Math.sin(time * 5.0 - t0 * 9.0 + sd.phase) * 0.08;
+          }
+
+          const waveAmp0 = (sd.amp + simOffset0) * Math.pow(t0, 1.3);
+          const waveX0 = Math.sin(time * (sd.speed * speedMult) + t0 * sd.freq * 4.5 + sd.phase) * waveAmp0;
+          const waveZ0 = Math.cos(time * (sd.speed * speedMult) * 0.85 + t0 * sd.freq * 3.8 + sd.phase) * waveAmp0;
 
           const r0 = currentRadius * (1 - t0 * 0.28);
           const x0 = Math.cos(sd.angle) * r0 + waveX0;
           const z0 = Math.sin(sd.angle) * r0 + waveZ0;
 
-          // Point v + 1
           const t1 = (v + 1) / (vertsPerStrand - 1);
           const y1 = 0.05 - t1 * sd.length;
-          const waveAmp1 = sd.amp * Math.pow(t1, 1.3);
-          const waveX1 = Math.sin(time * sd.speed + t1 * sd.freq * 4.5 + sd.phase) * waveAmp1;
-          const waveZ1 = Math.cos(time * sd.speed * 0.85 + t1 * sd.freq * 3.8 + sd.phase) * waveAmp1;
+          
+          let simOffset1 = 0;
+          if (entityState === 'SIMULATION') {
+            simOffset1 = Math.sin(time * 5.0 - t1 * 9.0 + sd.phase) * 0.08;
+          }
+
+          const waveAmp1 = (sd.amp + simOffset1) * Math.pow(t1, 1.3);
+          const waveX1 = Math.sin(time * (sd.speed * speedMult) + t1 * sd.freq * 4.5 + sd.phase) * waveAmp1;
+          const waveZ1 = Math.cos(time * (sd.speed * speedMult) * 0.85 + t1 * sd.freq * 3.8 + sd.phase) * waveAmp1;
 
           const r1 = currentRadius * (1 - t1 * 0.28);
           const x1 = Math.cos(sd.angle) * r1 + waveX1;
@@ -510,14 +541,14 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
         for (let v = 0; v < vertsPerOral - 1; v++) {
           const t0 = v / (vertsPerOral - 1);
           const y0 = -0.05 - t0 * od.length;
-          const spiral0 = od.angle + t0 * 2.5 + Math.sin(time * od.speed + t0 * 4.2 + od.phase) * 0.35;
+          const spiral0 = od.angle + t0 * 2.5 + Math.sin(time * (od.speed * speedMult) + t0 * 4.2 + od.phase) * 0.35;
           const r0 = 0.42 * (1 - t0 * 0.4) + Math.sin(time * 1.6 + t0 * 5) * 0.08;
           const x0 = Math.cos(spiral0) * r0;
           const z0 = Math.sin(spiral0) * r0;
 
           const t1 = (v + 1) / (vertsPerOral - 1);
           const y1 = -0.05 - t1 * od.length;
-          const spiral1 = od.angle + t1 * 2.5 + Math.sin(time * od.speed + t1 * 4.2 + od.phase) * 0.35;
+          const spiral1 = od.angle + t1 * 2.5 + Math.sin(time * (od.speed * speedMult) + t1 * 4.2 + od.phase) * 0.35;
           const r1 = 0.42 * (1 - t1 * 0.4) + Math.sin(time * 1.6 + t1 * 5) * 0.08;
           const x1 = Math.cos(spiral1) * r1;
           const z1 = Math.sin(spiral1) * r1;
@@ -535,7 +566,8 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
 
     // 6. Drift Particles
     if (particlesRef.current && !reducedMotion) {
-      particlesRef.current.rotation.y += delta * 0.05;
+      const pSpeed = entityState === 'ELEVATED_RISK' ? 0.12 : 0.05;
+      particlesRef.current.rotation.y += delta * pSpeed;
     }
   });
 
@@ -579,18 +611,19 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
   );
 };
 
-export const OmenJellyfishEntity: React.FC<{ className?: string }> = ({ className = '' }) => {
+export const OmenJellyfishEntity: React.FC<{
+  className?: string;
+  entityState?: OmenEntityState;
+}> = ({ className = '', entityState = 'IDLE' }) => {
   const [hasWebGL, setHasWebGL] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    // Check reduced-motion preference
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setReducedMotion(mediaQuery.matches);
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
     mediaQuery.addEventListener('change', handler);
 
-    // Check WebGL support
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -674,7 +707,7 @@ export const OmenJellyfishEntity: React.FC<{ className?: string }> = ({ classNam
         <pointLight position={[-3, -1, -2]} intensity={1.6} color="#5C0614" />
         <pointLight position={[3, -1, -2]} intensity={1.6} color="#5C0614" />
 
-        <JellyfishModel reducedMotion={reducedMotion} />
+        <JellyfishModel reducedMotion={reducedMotion} entityState={entityState} />
       </Canvas>
     </div>
   );

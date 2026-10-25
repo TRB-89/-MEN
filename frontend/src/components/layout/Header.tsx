@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Terminal, RefreshCw, AlertTriangle, Server } from 'lucide-react';
+import { Menu, Terminal, RefreshCw, AlertTriangle, Server, Search } from 'lucide-react';
 import { useBackend } from '../../services/BackendContext';
 import { ConnectBackendModal } from '../common/ConnectBackendModal';
 
@@ -51,11 +51,11 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle, onOpenMobileNav
 
   return (
     <>
-      <header className="sticky top-0 z-30 w-full bg-background/90 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-30 w-full bg-[#050506]/90 backdrop-blur-md border-b border-[#E2E2E5]/10 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={onOpenMobileNav}
-            className="lg:hidden p-2 border border-border text-muted hover:text-chrome hover:border-chrome"
+            className="lg:hidden p-2 border border-[#E2E2E5]/15 text-[#919198] hover:text-[#E2E2E5] hover:border-[#E2E2E5] rounded"
             aria-label="Open mobile navigation"
           >
             <Menu className="w-5 h-5" />
@@ -63,15 +63,15 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle, onOpenMobileNav
 
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-heading text-lg font-bold tracking-tight text-primary uppercase">
+              <h2 className="font-heading text-lg font-bold tracking-tight text-[#F5F5F5] uppercase">
                 {title}
               </h2>
-              <span className="hidden sm:inline-block px-1.5 py-0.5 text-[9px] font-mono border border-crimson/40 bg-crimson/10 text-crimson-glow uppercase">
-                ØMEN-OPS
+              <span className="hidden sm:inline-block px-1.5 py-0.5 text-[9px] font-mono border border-[#B10F29]/40 bg-[#B10F29]/15 text-[#F02D46] rounded uppercase">
+                BLACKSITE-OPS
               </span>
             </div>
             {subtitle && (
-              <p className="font-mono text-xs text-secondary mt-0.5 hidden md:block">
+              <p className="font-mono text-xs text-[#919198] mt-0.5 hidden md:block">
                 {subtitle}
               </p>
             )}
@@ -79,6 +79,20 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle, onOpenMobileNav
         </div>
 
         <div className="flex items-center gap-3 sm:gap-4">
+          {/* Quick Command Palette Button */}
+          <button
+            onClick={() => {
+              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+            }}
+            className="hidden sm:flex items-center gap-2 border border-[#E2E2E5]/15 px-2.5 py-1.5 bg-[#101013] hover:bg-[#19191D] hover:border-[#F02D46]/50 transition-colors font-technical text-xs text-[#919198] hover:text-[#E2E2E5] rounded-lg"
+            title="Open Command Palette (Ctrl+K)"
+          >
+            <Search className="w-3.5 h-3.5 text-[#F02D46]" />
+            <span className="text-[11px] font-mono">CMD</span>
+            <kbd className="px-1.5 py-0.2 bg-[#050506] border border-[#E2E2E5]/20 text-[9px] text-[#E2E2E5] rounded">
+              Ctrl K
+            </kbd>
+          </button>
           {/* Backend Connection Indicator & Trigger */}
           <button
             onClick={() => (isOnline ? checkHealth(true) : setIsConnectModalOpen(true))}
