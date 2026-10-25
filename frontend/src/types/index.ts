@@ -341,6 +341,163 @@ export interface DefenseSimulationResult {
   summary: string;
 }
 
+export interface SimulationMetrics {
+  blast_radius_before: number;
+  blast_radius_after: number;
+  containment_efficacy_pct: number;
+  severed_edges_count: number;
+  critical_assets_saved_count: number;
+  residual_critical_exposed_count: number;
+  risk_score_before: number;
+  risk_score_after: number;
+  risk_reduction_pct: number;
+  operational_disruption_score: number;
+  net_defensive_utility: number;
+}
+
+export interface BusinessImpactAnalysis {
+  disrupted_legitimate_services: string[];
+  affected_departments: string[];
+  estimated_downtime_minutes: number;
+  operational_friction: string;
+  critical_business_functions_maintained: string[];
+}
+
+export interface DefenseSimulationRequest {
+  action_type: string;
+  target_entity: string;
+  entry_node?: string;
+  target_asset_id?: string;
+  prediction_id?: string;
+  max_hops?: number;
+}
+
+export interface DefenseSimulationResponse {
+  simulation_id: string;
+  timestamp: string;
+  action_type: string;
+  target_entity: string;
+  target_name: string;
+  entry_node: string;
+  entry_node_name: string;
+  crown_jewel_target?: string | null;
+  topology_snapshot_id: string;
+  prediction_id?: string | null;
+  metrics: SimulationMetrics;
+  business_impact: BusinessImpactAnalysis;
+  reachability_comparison: {
+    reachable_nodes_before: string[];
+    reachable_nodes_after: string[];
+    critical_exposed_before: string[];
+    critical_exposed_after: string[];
+    protected_crown_jewels: string[];
+  };
+  interrupted_attack_paths: string[];
+  remaining_attack_paths: Array<{
+    nodes: string[];
+    hops: number;
+    risk_score: number;
+    risk_category: string;
+    estimated_time_mins: number;
+    explanation: string;
+  }>;
+  explanation: string;
+  assumptions: string[];
+  approval_status: string;
+  disclaimer: string;
+}
+
+export interface DefenseRecommendationItem {
+  recommendation_id: string;
+  rank: number;
+  action_type: string;
+  target_entity: string;
+  target_name: string;
+  target_zone: string;
+  projected_risk_reduction_pct: number;
+  operational_disruption_pct: number;
+  net_utility_score: number;
+  confidence_score: number;
+  rationale: string;
+  affected_paths_count: number;
+  critical_assets_shielded: number;
+  decision_tradeoff: string;
+}
+
+export interface DefenseRecommendationRequest {
+  prediction_id?: string;
+  entry_node?: string;
+  target_asset_id?: string;
+  max_recommendations?: number;
+  risk_weight?: number;
+  disruption_weight?: number;
+}
+
+export interface DefenseRecommendationResponse {
+  recommendation_id: string;
+  timestamp: string;
+  entry_node: string;
+  crown_jewel_target?: string | null;
+  prediction_id?: string | null;
+  topology_snapshot_id: string;
+  recommended_strategy: DefenseRecommendationItem;
+  alternative_strategies: DefenseRecommendationItem[];
+  scoring_weights: {
+    risk_weight: number;
+    disruption_weight: number;
+  };
+  summary: string;
+  disclaimer: string;
+}
+
+export interface DefenseApprovalRequest {
+  simulation_id: string;
+  analyst_id?: string;
+  decision: 'APPROVED' | 'REJECTED';
+  notes?: string;
+}
+
+export interface DefenseApprovalResponse {
+  approval_id: string;
+  simulation_id: string;
+  analyst_id: string;
+  decision: string;
+  notes?: string;
+  approved_at: string;
+  audit_message: string;
+}
+
+export type DefenseActionType = 
+  | 'WORKSTATION_ISOLATION'
+  | 'CONNECTION_RESTRICTION'
+  | 'SESSION_REVOCATION'
+  | 'ENHANCED_MONITORING';
+
+export interface DefenseHistoryItem {
+  simulation_id: string;
+  timestamp: string;
+  action_type: string;
+  target_entity: string;
+  risk_before: number;
+  risk_after: number;
+  risk_score_before?: number;
+  risk_score_after?: number;
+  risk_reduction_pct: number;
+  disruption_score: number;
+  net_utility?: number;
+  approval_status: string;
+}
+
+export interface DefenseEngineHealth {
+  status: string;
+  engine: string;
+  version: string;
+  supported_actions: string[];
+  baseline_topology_nodes: number;
+  baseline_topology_edges: number;
+  isolation_safety_guarantee: string;
+}
+
 export interface IncidentRecord {
   id: string;
   title: string;

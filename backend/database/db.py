@@ -363,6 +363,69 @@ class AttackPathPredictionRecord(Base):
         }
 
 
+class DefenseSimulationRecord(Base):
+    __tablename__ = "defense_simulations"
+
+    id = Column(String(50), primary_key=True, index=True)
+    prediction_id = Column(String(50), nullable=True, index=True)
+    topology_snapshot = Column(String(100), nullable=True)
+    action_type = Column(String(50), nullable=False)
+    target_entity = Column(String(100), nullable=False)
+    risk_before = Column(Float, nullable=False, default=0.0)
+    risk_after = Column(Float, nullable=False, default=0.0)
+    risk_reduction_pct = Column(Float, nullable=False, default=0.0)
+    disruption_score = Column(Float, nullable=False, default=0.0)
+    containment_efficacy = Column(Float, nullable=False, default=0.0)
+    approval_status = Column(String(30), nullable=False, default="PENDING")
+    details_json = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        details = {}
+        if self.details_json:
+            try:
+                details = json.loads(self.details_json)
+            except Exception:
+                details = {}
+        return {
+            "id": self.id,
+            "simulation_id": self.id,
+            "prediction_id": self.prediction_id,
+            "topology_snapshot": self.topology_snapshot,
+            "action_type": self.action_type,
+            "target_entity": self.target_entity,
+            "risk_before": self.risk_before,
+            "risk_after": self.risk_after,
+            "risk_reduction_pct": self.risk_reduction_pct,
+            "disruption_score": self.disruption_score,
+            "containment_efficacy": self.containment_efficacy,
+            "approval_status": self.approval_status,
+            "details": details,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class DefenseApprovalRecord(Base):
+    __tablename__ = "defense_approvals"
+
+    id = Column(String(50), primary_key=True, index=True)
+    simulation_id = Column(String(50), nullable=False, index=True)
+    analyst_id = Column(String(50), nullable=False, default="secops_operator")
+    decision = Column(String(30), nullable=False, default="APPROVED")
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "simulation_id": self.simulation_id,
+            "analyst_id": self.analyst_id,
+            "decision": self.decision,
+            "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:

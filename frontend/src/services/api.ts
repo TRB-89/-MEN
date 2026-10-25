@@ -13,6 +13,14 @@ import {
   CriticalAssetItem,
   EngineHealthResponse,
   DefenseSimulationResult,
+  DefenseSimulationRequest,
+  DefenseSimulationResponse,
+  DefenseRecommendationRequest,
+  DefenseRecommendationResponse,
+  DefenseApprovalRequest,
+  DefenseApprovalResponse,
+  DefenseHistoryItem,
+  DefenseEngineHealth,
   IncidentRecord,
   DetectionModelsResponse,
   DetectionMetricsResponse,
@@ -409,6 +417,58 @@ export class ApiService {
       }),
       timeoutMs,
     });
+  }
+
+  async getDefenseRecommendations(
+    req: DefenseRecommendationRequest,
+    timeoutMs: number = 20000
+  ): Promise<DefenseRecommendationResponse> {
+    return this.request<DefenseRecommendationResponse>('/api/v1/defense/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+      timeoutMs,
+    });
+  }
+
+  async runDefenseSimulation(
+    req: DefenseSimulationRequest,
+    timeoutMs: number = 20000
+  ): Promise<DefenseSimulationResponse> {
+    return this.request<DefenseSimulationResponse>('/api/v1/defense/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+      timeoutMs,
+    });
+  }
+
+  async submitDefenseApproval(
+    req: DefenseApprovalRequest,
+    timeoutMs: number = 20000
+  ): Promise<DefenseApprovalResponse> {
+    return this.request<DefenseApprovalResponse>('/api/v1/defense/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+      timeoutMs,
+    });
+  }
+
+  async getDefenseActions(timeoutMs: number = 10000): Promise<any[]> {
+    return this.request<any[]>('/api/v1/defense/actions', { timeoutMs });
+  }
+
+  async getDefenseSimulations(limit: number = 20, timeoutMs: number = 20000): Promise<DefenseHistoryItem[]> {
+    return this.request<DefenseHistoryItem[]>(`/api/v1/defense/simulations?limit=${limit}`, { timeoutMs });
+  }
+
+  async getDefenseSimulationById(simulationId: string, timeoutMs: number = 20000): Promise<any> {
+    return this.request<any>(`/api/v1/defense/simulations/${encodeURIComponent(simulationId)}`, { timeoutMs });
+  }
+
+  async getDefenseHealth(timeoutMs: number = 10000): Promise<DefenseEngineHealth> {
+    return this.request<DefenseEngineHealth>('/api/v1/defense/health', { timeoutMs });
   }
 
   async getIncidents(
