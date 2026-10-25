@@ -187,23 +187,143 @@ export interface ScenarioLoadResponse {
   topology: NetworkGraphData;
 }
 
+export interface RiskFactorBreakdown {
+  vulnerability_severity: number;
+  asset_criticality: number;
+  privilege_access_level: number;
+  detection_evidence_level: number;
+  exposure_index: number;
+  path_hop_penalty: number;
+}
+
+export interface AttackPathHopDetail {
+  hop_index?: number;
+  from_node: string;
+  from_name?: string;
+  to_node: string;
+  to_name?: string;
+  protocol: string;
+  port: number;
+  relationship_type?: string;
+  access_permissions?: string;
+  mitre_technique?: string;
+  mitre_technique_id?: string;
+  mitre_technique_name?: string;
+  mitre_tactic?: string;
+  hop_risk: number;
+  hop_risk_score?: number;
+  estimated_time_mins: number;
+  estimated_traversal_time_mins?: number;
+  detection_indicators?: string[];
+  explanation?: string;
+}
+
 export interface AttackPath {
   path_id: string;
+  source_node?: string;
   target_node: string;
   target_name: string;
   nodes: string[];
+  node_names?: string[];
   hops: number;
   risk_score: number;
+  risk_category?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | string;
+  risk_factors?: RiskFactorBreakdown;
   estimated_time_mins: number;
-  hop_details: Array<{
-    from_node: string;
-    to_node: string;
-    protocol: string;
-    port: number;
-    mitre_technique: string;
-    hop_risk: number;
-    estimated_time_mins: number;
+  hop_details: AttackPathHopDetail[];
+  evidence_references?: string[];
+  assumptions?: string[];
+  ranking_explanation?: string;
+  containment_recommendation?: string | null;
+}
+
+export interface CriticalChokepoint {
+  node_id: string;
+  name: string;
+  frequency: number;
+  criticality: string;
+  recommended_action?: string;
+}
+
+export interface AttackPathPredictionRequest {
+  source_asset_id: string;
+  target_asset_id?: string;
+  max_depth?: number;
+  top_k?: number;
+  isolated_nodes?: string[];
+  simulation_mode?: boolean;
+}
+
+export interface AttackPathPredictionResponse {
+  prediction_id: string;
+  timestamp: string;
+  source_asset_id: string;
+  source_asset_name: string;
+  target_asset_id: string | null;
+  target_asset_name: string | null;
+  topology_snapshot_id: string;
+  total_candidate_paths: number;
+  candidate_paths: AttackPath[];
+  critical_chokepoints: CriticalChokepoint[];
+  scoring_engine_version: string;
+  simulation_mode: boolean;
+  disclaimer: string;
+  data_provenance: Record<string, any>;
+}
+
+export interface PredictionHistoryItem {
+  prediction_id: string;
+  timestamp: string;
+  source_asset_id: string;
+  target_asset_id: string | null;
+  total_paths: number;
+  highest_risk_score: number;
+  risk_category: string;
+  scoring_version: string;
+  is_simulation: boolean;
+}
+
+export interface CriticalAssetItem {
+  id: string;
+  name: string;
+  zone: string;
+  criticality: string;
+  asset_type: string;
+  ip?: string | null;
+  vuln_score: number;
+  security_status: string;
+}
+
+export interface EngineHealthResponse {
+  status: string;
+  engine: string;
+  version: string;
+  algorithm: string;
+  topology_loaded: boolean;
+  total_nodes: number;
+  total_edges: number;
+  graph_density: number;
+  scoring_model: string;
+}
+
+export interface DefenseSimulationHandoff {
+  prediction_id: string;
+  source_asset_id: string;
+  critical_target_id?: string;
+  topology_snapshot_id: string;
+  ranked_candidate_paths: AttackPath[];
+  affected_assets: string[];
+  primary_risk_factors: Record<string, number>;
+  available_containment_points: Array<{
+    node_id: string;
+    node_name: string;
+    criticality: string;
+    blast_radius_reduction_pct: number;
+    affected_paths_count: number;
+    recommendation_reason: string;
   }>;
+  scoring_version: string;
+  handoff_timestamp: string;
 }
 
 export interface DefenseSimulationResult {

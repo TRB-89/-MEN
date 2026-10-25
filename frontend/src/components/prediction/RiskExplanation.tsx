@@ -68,20 +68,70 @@ export const RiskExplanation: React.FC<RiskExplanationProps> = ({ path, activeHo
         </div>
       </div>
 
+      {/* Risk Factors Breakdown */}
+      {path.risk_factors && (
+        <div className="p-3 bg-surface-elevated border border-border space-y-2.5 font-mono text-xs">
+          <div className="flex items-center justify-between text-[10px] text-muted uppercase tracking-wider font-bold">
+            <span>MULTI-DIMENSIONAL RISK FACTORS</span>
+            <span className="text-crimson">HEURISTIC EVALUATION</span>
+          </div>
+          <div className="space-y-2">
+            {[
+              { label: 'TARGET ASSET CRITICALITY', value: path.risk_factors.asset_criticality, color: 'bg-crimson' },
+              { label: 'VULNERABILITY DENSITY', value: path.risk_factors.vulnerability_severity, color: 'bg-amber-400' },
+              { label: 'NEURAL THREAT CORRELATION', value: path.risk_factors.detection_evidence_level, color: 'bg-crimson' },
+              { label: 'PRIVILEGE ESCALATION LEVERAGE', value: path.risk_factors.privilege_access_level, color: 'bg-purple-400' },
+              { label: 'NETWORK PERIMETER EXPOSURE', value: path.risk_factors.exposure_index, color: 'bg-cyan-400' },
+              { label: 'PROPAGATION VELOCITY', value: path.risk_factors.path_hop_penalty, color: 'bg-emerald-400' },
+            ].map((f, i) => (
+              <div key={i} className="space-y-1">
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-muted">{f.label}</span>
+                  <span className="text-chrome font-bold">{f.value.toFixed(0)}%</span>
+                </div>
+                <div className="h-1 bg-background rounded-full overflow-hidden">
+                  <div className={`h-full ${f.color} transition-all duration-500`} style={{ width: `${Math.min(100, Math.max(5, f.value))}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Module 1 Correlated Detection Evidence */}
+      {path.evidence_references && path.evidence_references.length > 0 && (
+        <div className="p-3 bg-crimson/10 border border-crimson/30 space-y-1.5 font-mono text-xs">
+          <div className="text-[10px] text-crimson font-bold uppercase tracking-wider flex items-center gap-1.5">
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span>MODULE 1 NEURAL CORRELATION SIGNALS</span>
+          </div>
+          <ul className="space-y-1 text-[11px] text-secondary">
+            {path.evidence_references.map((ev, eIdx) => (
+              <li key={eIdx} className="flex items-start gap-1.5">
+                <span className="text-crimson mt-0.5">•</span>
+                <span>{ev}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Active Hop Focus */}
       {currentHop && (
         <div className="p-3 bg-surface-elevated border border-border space-y-2 font-mono text-xs">
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-muted uppercase">HOP FOCUS [STEP {activeHopIndex + 1}/{path.hop_details.length}]</span>
             <span className="text-crimson font-bold">
-              {currentHop.from_node} → {currentHop.to_node}
+              {currentHop.from_name || currentHop.from_node} → {currentHop.to_name || currentHop.to_node}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
             <div>
               <span className="text-muted block text-[10px]">MITRE TECHNIQUE:</span>
-              <span className="text-primary font-bold">{currentHop.mitre_technique}</span>
+              <span className="text-primary font-bold">
+                {currentHop.mitre_technique_id ? `${currentHop.mitre_technique_id} - ${currentHop.mitre_technique_name}` : currentHop.mitre_technique}
+              </span>
             </div>
             <div>
               <span className="text-muted block text-[10px]">PROTOCOL / PORT:</span>
@@ -89,9 +139,15 @@ export const RiskExplanation: React.FC<RiskExplanationProps> = ({ path, activeHo
             </div>
           </div>
 
+          {currentHop.explanation && (
+            <p className="text-[11px] text-secondary/90 italic pt-1 border-t border-border/40">
+              {currentHop.explanation}
+            </p>
+          )}
+
           <div className="pt-2 border-t border-border/80 flex items-center justify-between text-[10px]">
             <span className="text-muted">HOP PENETRATION RISK:</span>
-            <span className="text-amber-400 font-bold">{currentHop.hop_risk.toFixed(1)} pts</span>
+            <span className="text-amber-400 font-bold">{(currentHop.hop_risk_score ?? currentHop.hop_risk).toFixed(1)} pts</span>
           </div>
         </div>
       )}
@@ -99,10 +155,14 @@ export const RiskExplanation: React.FC<RiskExplanationProps> = ({ path, activeHo
       {/* Analytical Narrative */}
       <div className="p-3 bg-background border border-border font-sans text-xs text-secondary leading-relaxed space-y-1.5">
         <div className="font-mono text-[10px] text-muted uppercase tracking-wider font-semibold">
-          ALGORITHMIC ASSESSMENT // BELLMAN-FORD SHORTEST-RISK
+          ALGORITHMIC ASSESSMENT // EXPLAINABLE RISK SYNTHESIS
         </div>
         <p>
-          Adversary exploits low-entropy pivot point <strong className="text-chrome font-mono">{path.nodes[0]}</strong> to initiate lateral movement towards critical asset <strong className="text-crimson font-mono">{path.target_node}</strong>. Intervening firewall rules and SSH keys allow autonomous credential scraping within ~{path.estimated_time_mins} minutes.
+          {path.ranking_explanation || (
+            <>
+              Adversary exploits low-entropy pivot point <strong className="text-chrome font-mono">{path.nodes[0]}</strong> to initiate lateral movement towards critical asset <strong className="text-crimson font-mono">{path.target_node}</strong>. Intervening firewall rules allow autonomous movement within ~{path.estimated_time_mins} minutes.
+            </>
+          )}
         </p>
       </div>
     </OmenPanel>

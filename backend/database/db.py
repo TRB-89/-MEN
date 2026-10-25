@@ -309,6 +309,60 @@ class SimulationScenarioRecord(Base):
         }
 
 
+class AttackPathPredictionRecord(Base):
+    __tablename__ = "attack_path_predictions"
+
+    id = Column(String(50), primary_key=True, index=True)
+    source_asset_id = Column(String(50), nullable=False, index=True)
+    target_asset_id = Column(String(50), nullable=True, index=True)
+    topology_snapshot = Column(String(100), nullable=True)
+    total_paths = Column(Integer, nullable=False, default=0)
+    highest_risk_score = Column(Float, nullable=False, default=0.0)
+    risk_category = Column(String(30), nullable=False, default="MEDIUM")
+    paths_json = Column(Text, nullable=False)
+    chokepoints_json = Column(Text, nullable=True)
+    scoring_version = Column(String(50), nullable=False, default="OMEN-AP-2.1")
+    is_simulation = Column(Integer, nullable=False, default=1)
+    metadata_json = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        paths = []
+        if self.paths_json:
+            try:
+                paths = json.loads(self.paths_json)
+            except Exception:
+                paths = []
+        chokepoints = []
+        if self.chokepoints_json:
+            try:
+                chokepoints = json.loads(self.chokepoints_json)
+            except Exception:
+                chokepoints = []
+        meta = {}
+        if self.metadata_json:
+            try:
+                meta = json.loads(self.metadata_json)
+            except Exception:
+                meta = {}
+        return {
+            "prediction_id": self.id,
+            "id": self.id,
+            "source_asset_id": self.source_asset_id,
+            "target_asset_id": self.target_asset_id,
+            "topology_snapshot": self.topology_snapshot,
+            "total_paths": self.total_paths,
+            "highest_risk_score": self.highest_risk_score,
+            "risk_category": self.risk_category,
+            "paths": paths,
+            "critical_chokepoints": chokepoints,
+            "scoring_version": self.scoring_version,
+            "is_simulation": bool(self.is_simulation),
+            "metadata": meta,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:

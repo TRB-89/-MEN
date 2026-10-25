@@ -41,9 +41,22 @@ export const PathRankingPanel: React.FC<PathRankingPanelProps> = ({
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-primary font-bold">
-                  PATH #{idx + 1} // {p.path_id}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-primary font-bold">
+                    PATH #{idx + 1} // {p.path_id}
+                  </span>
+                  {p.risk_category && (
+                    <span className={`px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider ${
+                      p.risk_category === 'CRITICAL'
+                        ? 'bg-crimson/20 text-crimson-glow border border-crimson/40'
+                        : p.risk_category === 'HIGH'
+                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                        : 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+                    }`}>
+                      {p.risk_category}
+                    </span>
+                  )}
+                </div>
                 <span className="px-2 py-0.5 bg-crimson/15 text-crimson-glow border border-crimson/30 text-[10px] font-bold">
                   RISK {p.risk_score.toFixed(1)} / 100
                 </span>
@@ -70,6 +83,12 @@ export const PathRankingPanel: React.FC<PathRankingPanelProps> = ({
                   </React.Fragment>
                 ))}
               </div>
+
+              {p.containment_recommendation && (
+                <div className="mb-2 text-[10px] text-amber-400/90 bg-amber-500/10 p-1.5 border border-amber-500/20 truncate">
+                  🛡️ {p.containment_recommendation}
+                </div>
+              )}
 
               <div className="flex items-center justify-between text-[10px] text-muted pt-2 border-t border-border/60">
                 <span>{p.hops} HOPS</span>

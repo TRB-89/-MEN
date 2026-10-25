@@ -7,6 +7,11 @@ import {
   FlowRecord,
   NetworkGraphData,
   AttackPath,
+  AttackPathPredictionRequest,
+  AttackPathPredictionResponse,
+  PredictionHistoryItem,
+  CriticalAssetItem,
+  EngineHealthResponse,
   DefenseSimulationResult,
   IncidentRecord,
   DetectionModelsResponse,
@@ -360,6 +365,34 @@ export class ApiService {
       }),
       timeoutMs,
     });
+  }
+
+  async predictAttackPathsV2(
+    requestData: AttackPathPredictionRequest,
+    timeoutMs: number = 20000
+  ): Promise<AttackPathPredictionResponse> {
+    return this.request<AttackPathPredictionResponse>('/api/v1/attack-paths/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestData),
+      timeoutMs,
+    });
+  }
+
+  async getPredictionHistory(limit: number = 20, timeoutMs: number = 20000): Promise<PredictionHistoryItem[]> {
+    return this.request<PredictionHistoryItem[]>(`/api/v1/attack-paths/history?limit=${limit}`, { timeoutMs });
+  }
+
+  async getCriticalAssets(timeoutMs: number = 20000): Promise<CriticalAssetItem[]> {
+    return this.request<CriticalAssetItem[]>('/api/v1/attack-paths/critical-assets', { timeoutMs });
+  }
+
+  async getPredictionHealth(timeoutMs: number = 10000): Promise<EngineHealthResponse> {
+    return this.request<EngineHealthResponse>('/api/v1/attack-paths/health', { timeoutMs });
+  }
+
+  async getPredictionById(predictionId: string, timeoutMs: number = 20000): Promise<any> {
+    return this.request<any>(`/api/v1/attack-paths/${encodeURIComponent(predictionId)}`, { timeoutMs });
   }
 
   async simulateIsolation(
