@@ -43,7 +43,7 @@ export const OmenPanel: React.FC<OmenPanelProps> = ({
 
   return (
     <div
-      className={`bg-surface relative ${chamferClass} ${borderClass} ${glowClass} ${
+      className={`bg-surface relative ${chamfer === 'none' && !className.includes('rounded') ? 'rounded-2xl' : ''} ${chamferClass} ${borderClass} ${glowClass} ${
         cornerTicks ? 'tech-corner-tl tech-corner-br' : ''
       } ${className}`}
       {...props}

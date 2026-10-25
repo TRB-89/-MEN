@@ -26,21 +26,21 @@ export const ModelHealth: React.FC<ModelHealthProps> = ({ models }) => {
       key: 'random_forest' as const,
       role: 'SUPERVISED ATTACK CLASSIFIER',
       type: '100 TREES ENSEMBLE',
-      status: models?.models.random_forest.status || 'not_trained',
+      status: (models?.models as any)?.random_forest?.status || 'not_trained',
     },
     {
       name: 'MLP NEURAL NETWORK',
       key: 'mlp_neural_network' as const,
       role: 'DEEP TENSOR PERCEPTRON',
       type: 'PYTORCH 3-LAYER [128→64]',
-      status: models?.models.mlp_neural_network.status || 'not_trained',
+      status: (models?.models as any)?.mlp_neural_network?.status || 'not_trained',
     },
     {
       name: 'ISOLATION FOREST',
       key: 'isolation_forest' as const,
       role: 'UNSUPERVISED ZERO-DAY ANOMALY',
       type: '150 ISOLATION TREES',
-      status: models?.models.isolation_forest.status || 'not_trained',
+      status: (models?.models as any)?.isolation_forest?.status || 'not_trained',
     },
   ];
 

@@ -3,26 +3,29 @@
 @tailwind utilities;
 
 :root {
-  --background: #050507;
-  --surface: #101014;
-  --surface-elevated: #17171D;
-  --border: #1E1E26;
-  --border-hairline: rgba(214, 214, 218, 0.12);
-  --primary: #F2F2F4;
-  --secondary: #A1A1AA;
-  --crimson: #B3122F;
-  --glow-red: #E34C67;
-  --muted-rose: #A95370;
-  --chrome: #D6D6DA;
+  --background: #050505;
+  --secondary: #0D0D0F;
+  --panel: #161619;
+  --crimson: #D10E24;
+  --bright-red: #FF293F;
+  --deep-red: #5C0614;
+  --chrome: #DCDCE0;
+  --text: #F5F5F5;
+  --muted: #99999F;
+  --border-subtle: rgba(220, 220, 224, 0.08);
+  --border-hairline: rgba(220, 220, 224, 0.12);
+  --glow-crimson: rgba(209, 14, 36, 0.35);
 }
 
 body {
   margin: 0;
   background-color: var(--background);
-  color: var(--primary);
-  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  font-family: 'Space Grotesk', Inter, system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom Minimal Dark Industrial Scrollbar */
@@ -89,11 +92,49 @@ body {
 
 /* Atmospheric Glow Highlights */
 .glow-crimson-radial {
-  background: radial-gradient(circle at 50% 0%, rgba(179, 18, 47, 0.18) 0%, transparent 65%);
+  background: radial-gradient(circle at 50% 0%, rgba(209, 14, 36, 0.22) 0%, transparent 65%);
+}
+
+.glow-crimson-vivid {
+  background: radial-gradient(circle at 50% 50%, rgba(209, 14, 36, 0.25) 0%, rgba(92, 6, 20, 0.1) 50%, transparent 75%);
 }
 
 .glow-magenta-ambient {
-  background: radial-gradient(circle at 80% 20%, rgba(169, 83, 112, 0.12) 0%, transparent 60%);
+  background: radial-gradient(circle at 80% 20%, rgba(209, 14, 36, 0.15) 0%, transparent 60%);
+}
+
+/* Gothic Glassmorphic Panels & Floating Cards */
+.panel-gothic {
+  background: rgba(22, 22, 25, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(220, 220, 224, 0.08);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(220, 220, 224, 0.05);
+}
+
+.panel-gothic-interactive {
+  background: rgba(22, 22, 25, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(220, 220, 224, 0.09);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.panel-gothic-interactive:hover {
+  background: rgba(26, 26, 30, 0.9);
+  border-color: rgba(209, 14, 36, 0.45);
+  box-shadow: 0 14px 40px -8px rgba(0, 0, 0, 0.9), 0 0 30px rgba(209, 14, 36, 0.25);
+}
+
+.text-gradient-crimson {
+  background: linear-gradient(135deg, #FF293F 0%, #D10E24 60%, #5C0614 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-chrome {
+  background: linear-gradient(180deg, #FFFFFF 0%, #DCDCE0 60%, #99999F 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Scanning Beam Overlay */
@@ -103,7 +144,7 @@ body {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(227, 76, 103, 0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 41, 63, 0.6), transparent);
   opacity: 0.75;
   animation: scanbeam 7s ease-in-out infinite;
   pointer-events: none;
@@ -127,8 +168,8 @@ body {
   left: -1px;
   width: 6px;
   height: 6px;
-  border-top: 2px solid #D6D6DA;
-  border-left: 2px solid #D6D6DA;
+  border-top: 2px solid #DCDCE0;
+  border-left: 2px solid #DCDCE0;
   pointer-events: none;
 }
 
@@ -142,8 +183,8 @@ body {
   right: -1px;
   width: 6px;
   height: 6px;
-  border-bottom: 2px solid #D6D6DA;
-  border-right: 2px solid #D6D6DA;
+  border-bottom: 2px solid #DCDCE0;
+  border-right: 2px solid #DCDCE0;
   pointer-events: none;
 }
 

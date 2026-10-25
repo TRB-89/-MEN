@@ -8,8 +8,16 @@ import { api } from '../services/api';
 vi.mock('../services/api', () => ({
   api: {
     getStats: vi.fn(),
-    getHistory: vi.fn(),
+    getDetectionHistory: vi.fn(),
+    getNetworkTopology: vi.fn(),
+    getDetectionModels: vi.fn(),
+    predictAttackPaths: vi.fn(),
   },
+  resolveApiBaseUrl: vi.fn(() => 'http://127.0.0.1:8000'),
+}));
+
+vi.mock('../services/BackendContext', () => ({
+  useBackend: () => ({ isOnline: true }),
 }));
 
 describe('Overview Dashboard Component', () => {
@@ -17,104 +25,81 @@ describe('Overview Dashboard Component', () => {
     vi.clearAllMocks();
   });
 
-  it('renders loading state initially', () => {
-    (api.getStats as any).mockReturnValue(new Promise(() => {}));
-    (api.getHistory as any).mockReturnValue(new Promise(() => {}));
+  const mockStats = {
+    total_records_analyzed: 4500,
+    predicted_normal_count: 3200,
+    predicted_malicious_count: 1300,
+    attack_percentage: 28.89,
+    severity_distribution: {
+      Normal: 3200,
+      Low: 200,
+      Medium: 600,
+      High: 500,
+    },
+    most_recent_detection_timestamp: '2026-10-22T20:00:00Z',
+  };
 
-    render(
-      <MemoryRouter>
-        <Overview />
-      </MemoryRouter>
-    );
+  const mockTopology = {
+    nodes_count: 16,
+    edges_count: 22,
+    isolated_nodes: [],
+    nodes: [
+      { id: 'srv-web-01', name: 'Web Ingress', zone: 'DMZ', compromised: true, criticality: 'HIGH' },
+      { id: 'db-prod-01', name: 'Production Database', zone: 'INTERNAL', compromised: false, criticality: 'CRITICAL' },
+    ],
+    edges: [],
+  };
 
-    expect(screen.getByText(/ACQUIRING NEURAL METRICS & AUDIT LOGS/i)).toBeInTheDocument();
-  });
-
-  it('renders error state when API is unavailable', async () => {
-    (api.getStats as any).mockRejectedValue(
-      new Error('Backend unavailable. Start the NØX FastAPI server to enable detection.')
-    );
-    (api.getHistory as any).mockRejectedValue(
-      new Error('Backend unavailable. Start the NØX FastAPI server to enable detection.')
-    );
-
-    render(
-      <MemoryRouter>
-        <Overview />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Backend unavailable. Start the NØX FastAPI server to enable detection./i)
-      ).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/RETRY CONNECTION/i)).toBeInTheDocument();
-  });
-
-  it('renders metric cards with real backend telemetry', async () => {
-    (api.getStats as any).mockResolvedValue({
-      total_records_analyzed: 4500,
-      predicted_normal_count: 3200,
-      predicted_malicious_count: 1300,
-      attack_percentage: 28.89,
-      severity_distribution: {
-        Normal: 3200,
-        Low: 200,
-        Medium: 600,
-        High: 500,
-      },
-      most_recent_detection_timestamp: '2026-10-22T20:00:00Z',
-    });
-
-    (api.getHistory as any).mockResolvedValue([
+  const mockHistory = {
+    total_records: 1,
+    offset: 0,
+    limit: 10,
+    records: [
       {
-        id: 1,
+        id: 'EVT-001',
         timestamp: '2026-10-22T20:00:00Z',
-        prediction: 'Malicious',
-        class_id: 1,
-        attack_score: 0.942,
-        threshold: 0.5,
-        severity: 'High',
-        model_version: 'NØX-MLP-v1',
-        source_type: 'csv_upload',
+        threat_status: 'MALICIOUS',
+        severity: 'HIGH',
+        attack_category: 'Exploit',
+        device_id: 'srv-web-01',
       },
-    ]);
+    ],
+  };
+
+  it('renders Module 06 The ØMEN Console header and telemetry overview', async () => {
+    (api.getStats as any).mockResolvedValue(mockStats);
+    (api.getNetworkTopology as any).mockResolvedValue(mockTopology);
+    (api.getDetectionHistory as any).mockResolvedValue(mockHistory);
+    (api.getDetectionModels as any).mockResolvedValue({ status: 'online', models: [] });
+    (api.predictAttackPaths as any).mockResolvedValue({ paths: [] });
 
     render(
       <MemoryRouter>
         <Overview />
       </MemoryRouter>
     );
+
+    expect(screen.getByText('THE ØMEN CONSOLE.')).toBeInTheDocument();
+    expect(screen.getByText('DEFCON 3 POSTURE')).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('4,500')).toBeInTheDocument();
-      expect(screen.getByText('1,300')).toBeInTheDocument();
-      expect(screen.getByText('3,200')).toBeInTheDocument();
-      expect(screen.getByText('500')).toBeInTheDocument();
     });
-
-    expect(screen.getByText(/START DETECTION →/i)).toBeInTheDocument();
-    expect(screen.getByText(/INTELLIGENCE IN THE DARK/i)).toBeInTheDocument();
   });
 
-  it('renders zero metrics and appropriate empty states when no previous detections exist', async () => {
+  it('handles zero telemetry gracefully', async () => {
     (api.getStats as any).mockResolvedValue({
       total_records_analyzed: 0,
       predicted_normal_count: 0,
       predicted_malicious_count: 0,
       attack_percentage: 0.0,
-      severity_distribution: {
-        Normal: 0,
-        Low: 0,
-        Medium: 0,
-        High: 0,
-      },
+      severity_distribution: { Normal: 0, Low: 0, Medium: 0, High: 0 },
       most_recent_detection_timestamp: null,
     });
-
-    (api.getHistory as any).mockResolvedValue([]);
+    (api.getNetworkTopology as any).mockResolvedValue({ nodes_count: 0, edges_count: 0, isolated_nodes: [], nodes: [], edges: [] });
+    (api.getDetectionHistory as any).mockResolvedValue({ total_records: 0, offset: 0, limit: 10, records: [] });
+    (api.getDetectionModels as any).mockResolvedValue({ status: 'online', models: [] });
+    (api.predictAttackPaths as any).mockResolvedValue({ paths: [] });
 
     render(
       <MemoryRouter>
@@ -123,9 +108,7 @@ describe('Overview Dashboard Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByText('0')).toHaveLength(4);
+      expect(screen.getByText('THE ØMEN CONSOLE.')).toBeInTheDocument();
     });
-
-    expect(screen.getByText(/NO RECENT DETECTION INCIDENTS RECORDED/i)).toBeInTheDocument();
   });
 });

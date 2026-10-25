@@ -8,7 +8,27 @@ import { api } from '../services/api';
 vi.mock('../services/api', () => ({
   api: {
     uploadCSV: vi.fn(),
+    getDetectionHealth: vi.fn().mockResolvedValue({
+      status: 'online',
+      engine: 'fastapi',
+      dataset_available: true,
+      models_loaded: {
+        random_forest: true,
+        mlp_neural_network: true,
+        isolation_forest: true,
+        preprocessor: true,
+      },
+    }),
+    getDetectionModels: vi.fn().mockResolvedValue({ status: 'online', models: [] }),
+    getDetectionMetrics: vi.fn().mockResolvedValue({ models: {} }),
+    getDetectionHistory: vi.fn().mockResolvedValue({ total_records: 0, offset: 0, limit: 50, records: [] }),
+    analyzeEvent: vi.fn(),
   },
+  resolveApiBaseUrl: vi.fn(() => 'http://127.0.0.1:8000'),
+}));
+
+vi.mock('../services/BackendContext', () => ({
+  useBackend: () => ({ isOnline: true }),
 }));
 
 describe('Neural Detection Page & CSV Upload', () => {
@@ -23,7 +43,8 @@ describe('Neural Detection Page & CSV Upload', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('NEURAL DETECTION ENGINE')).toBeInTheDocument();
+    expect(screen.getByText('NEURAL DETECTION')).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/BATCH CSV INGESTION/i));
     expect(screen.getByText(/DRAG AND DROP CSV FILE HERE/i)).toBeInTheDocument();
     expect(screen.getByText(/START NEURAL INFERENCE →/i)).toBeInTheDocument();
   });
@@ -37,6 +58,7 @@ describe('Neural Detection Page & CSV Upload', () => {
       </MemoryRouter>
     );
 
+    fireEvent.click(screen.getByText(/BATCH CSV INGESTION/i));
     const input = document.getElementById('csv-file-input') as HTMLInputElement;
     const invalidFile = new File(['binary content'], 'malware_sample.exe', {
       type: 'application/x-msdownload',
@@ -71,7 +93,7 @@ describe('Neural Detection Page & CSV Upload', () => {
           attack_score: 0.954,
           threshold: 0.5,
           severity: 'High',
-          model: 'NØX-MLP-v1',
+          model: 'ØMEN-MLP-v1',
           timestamp: '2026-10-22T21:00:00Z',
         },
         {
@@ -80,7 +102,7 @@ describe('Neural Detection Page & CSV Upload', () => {
           attack_score: 0.042,
           threshold: 0.5,
           severity: 'Normal',
-          model: 'NØX-MLP-v1',
+          model: 'ØMEN-MLP-v1',
           timestamp: '2026-10-22T21:00:00Z',
         },
       ],
@@ -92,6 +114,7 @@ describe('Neural Detection Page & CSV Upload', () => {
       </MemoryRouter>
     );
 
+    fireEvent.click(screen.getByText(/BATCH CSV INGESTION/i));
     const input = document.getElementById('csv-file-input') as HTMLInputElement;
     const validFile = new File(['proto,service,sbytes\ntcp,http,1024\n'], 'network_flows.csv', {
       type: 'text/csv',
@@ -127,6 +150,7 @@ describe('Neural Detection Page & CSV Upload', () => {
       </MemoryRouter>
     );
 
+    fireEvent.click(screen.getByText(/BATCH CSV INGESTION/i));
     const input = document.getElementById('csv-file-input') as HTMLInputElement;
     const file = new File(['bad_content'], 'corrupt.csv', { type: 'text/csv' });
 

@@ -111,9 +111,9 @@ export const IncidentTimeline: React.FC<IncidentTimelineProps> = ({
 
                 <div className="mt-3 pt-2 border-t border-border/60 flex items-center justify-between font-mono text-[10px]">
                   <div className="flex items-center gap-2 text-muted">
-                    <span className="text-crimson font-bold">{incident.mitre_technique}</span>
+                    <span className="text-crimson font-bold">{incident.mitre_technique || 'T1059'}</span>
                     <span>•</span>
-                    <span>AFFECTED: {incident.affected_nodes.join(', ') || 'N/A'}</span>
+                    <span>AFFECTED: {Array.isArray(incident.affected_nodes) ? incident.affected_nodes.join(', ') : (incident.affected_nodes || 'N/A')}</span>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-muted group-hover:text-chrome group-hover:translate-x-0.5 transition-transform" />
                 </div>

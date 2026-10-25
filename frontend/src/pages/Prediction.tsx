@@ -90,7 +90,18 @@ export const Prediction: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in pb-16">
-      {/* 1. Module Header */}
+      {/* 1. Module Header with Non-Confirmed Simulation Disclaimer */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#161619]/60 border border-[#DCDCE0]/10 font-technical text-[11px] text-[#99999F]">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
+          <span className="text-[#DCDCE0] font-semibold uppercase">DEFENSIVE SIMULATION ADVISORY:</span>
+          <span>Predictions represent heuristic probability models, never confirmed real attacks.</span>
+        </div>
+        <span className="font-mono text-[10px] text-[#FF293F] bg-[#FF293F]/10 px-2 py-0.5 rounded border border-[#FF293F]/20">
+          HEURISTIC // READ-ONLY PROJECTION
+        </span>
+      </div>
+
       <OmenSectionHeader 
         moduleNumber="MODULE 03"
         tag="HEURISTIC TRAVERSAL MATRIX"

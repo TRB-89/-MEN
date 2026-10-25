@@ -62,23 +62,23 @@ const CyberDeviceNode: React.FC<{
     }
   };
 
-  // Border & background styling based on state
-  let cardStyle = 'border-border/80 bg-[#0F0F14] text-zinc-300 hover:border-zinc-500';
+  // Border & background styling based on state (Section 8 — Dark graphite canvas, red illuminated suspicious, chrome normal)
+  let cardStyle = 'border border-[#DCDCE0]/15 bg-[#161619]/90 text-[#F5F5F5] hover:border-[#DCDCE0]/40 shadow-[0_4px_16px_rgba(0,0,0,0.6)]';
   if (isIsolated) {
-    cardStyle = 'border-dashed border-zinc-700 bg-[#09090D] opacity-45 text-zinc-500';
+    cardStyle = 'border-dashed border-[#99999F]/30 bg-[#0D0D0F]/80 opacity-50 text-[#99999F]';
   } else if (isCompromised) {
-    cardStyle = 'border-2 border-crimson bg-[#1A0A0E] text-white shadow-[0_0_20px_rgba(179,18,47,0.4)] animate-pulse';
+    cardStyle = 'border-2 border-[#FF293F] bg-[#5C0614]/40 text-white shadow-[0_0_25px_rgba(255,41,63,0.45)] animate-pulse';
   } else if (isSuspicious) {
-    cardStyle = 'border-2 border-amber-500/80 bg-[#171208] text-amber-100 shadow-[0_0_15px_rgba(245,158,11,0.25)]';
+    cardStyle = 'border-2 border-[#F59E0B]/80 bg-[#291800]/50 text-amber-100 shadow-[0_0_18px_rgba(245,158,11,0.3)]';
   } else if (isCritical) {
-    cardStyle = 'border border-zinc-600 bg-[#121218] text-zinc-100 shadow-[0_0_12px_rgba(255,255,255,0.06)]';
+    cardStyle = 'border border-[#DCDCE0]/40 bg-[#1A1A1E] text-white shadow-[0_0_15px_rgba(220,220,224,0.1)]';
   }
 
   return (
     <div
       onClick={() => data.onSelect && data.onSelect(data)}
-      className={`relative px-3.5 py-2.5 min-w-[185px] max-w-[210px] rounded-none transition-all duration-300 cursor-pointer font-mono text-xs ${cardStyle} ${
-        selected ? 'ring-2 ring-crimson shadow-[0_0_25px_rgba(179,18,47,0.6)]' : ''
+      className={`relative px-4 py-3 min-w-[190px] max-w-[220px] rounded-2xl transition-all duration-300 cursor-pointer font-technical text-xs backdrop-blur-md ${cardStyle} ${
+        selected ? 'ring-2 ring-[#FF293F] shadow-[0_0_30px_rgba(255,41,63,0.6)]' : ''
       }`}
     >
       {/* Corner notch accent */}
@@ -178,7 +178,7 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
   const nodeTypes = useMemo(() => ({ cyberDevice: CyberDeviceNode }), []);
 
   return (
-    <div className={`w-full h-full relative overflow-hidden bg-[#0A0A0E] select-none ${className}`}>
+    <div className={`w-full h-full relative overflow-hidden bg-[#050505] select-none ${className}`}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -188,20 +188,20 @@ export const NetworkGraph: React.FC<NetworkGraphProps> = ({
         fitView
         minZoom={minZoom}
         maxZoom={maxZoom}
-        className="bg-[#0A0A0E]"
+        className="bg-[#050505]"
       >
-        <Background color="#1A1A24" gap={28} size={1.2} />
-        <Controls className="!bg-[#121218] !border !border-zinc-800 !fill-zinc-300 !text-zinc-300" />
+        <Background color="#161619" gap={28} size={1.2} />
+        <Controls className="!bg-[#161619] !border !border-[#DCDCE0]/15 !rounded-xl !overflow-hidden !fill-[#DCDCE0] !text-[#DCDCE0]" />
         {showMinimap && (
           <MiniMap
             nodeColor={(node) => {
-              if (node.data?.security_status === 'COMPROMISED' || node.data?.compromised) return '#B3122F';
-              if (node.data?.security_status === 'SUSPICIOUS') return '#D97706';
-              if (node.data?.isolated) return '#3F3F46';
-              return '#27272A';
+              if (node.data?.security_status === 'COMPROMISED' || node.data?.compromised) return '#FF293F';
+              if (node.data?.security_status === 'SUSPICIOUS') return '#F59E0B';
+              if (node.data?.isolated) return '#52525B';
+              return '#161619';
             }}
-            maskColor="rgba(8, 8, 12, 0.85)"
-            className="!bg-[#0D0D12] !border !border-zinc-800 !bottom-3 !right-3"
+            maskColor="rgba(5, 5, 5, 0.85)"
+            className="!bg-[#0D0D0F] !border !border-[#DCDCE0]/15 !rounded-xl !bottom-4 !right-4"
           />
         )}
       </ReactFlow>

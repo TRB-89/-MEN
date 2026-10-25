@@ -1,48 +1,53 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { History } from '../pages/History';
 import { api } from '../services/api';
 
+const mockIncidents = [
+  {
+    id: 'INC-2026-00101',
+    title: 'Lateral Movement Toward Database',
+    severity: 'HIGH',
+    status: 'ACTIVE',
+    description: 'Compromised web server attempted lateral SMB traversal',
+    affected_nodes: ['srv-db-01', 'srv-web-01'],
+    mitre_technique: 'T1021.002',
+    created_at: '2026-10-22T21:15:00Z',
+  },
+  {
+    id: 'INC-2026-00102',
+    title: 'Workstation Anomaly Observed',
+    severity: 'LOW',
+    status: 'CONTAINED',
+    description: 'Unusual outbound DNS requests detected by Isolation Forest',
+    affected_nodes: ['ws-finance-03'],
+    mitre_technique: 'T1071.004',
+    created_at: '2026-10-22T21:16:00Z',
+  },
+];
+
 vi.mock('../services/api', () => ({
   api: {
+    getIncidents: vi.fn(),
     getHistory: vi.fn(),
   },
+  resolveApiBaseUrl: vi.fn(() => 'http://127.0.0.1:8000'),
 }));
 
-describe('Detection History Page', () => {
+describe('Incident Memory & Forensic History Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  const mockEvents = [
-    {
-      id: 101,
-      timestamp: '2026-10-22T21:15:00Z',
-      prediction: 'Malicious',
-      class_id: 1,
-      attack_score: 0.985,
-      threshold: 0.5,
-      severity: 'High',
-      model_version: 'NØX-MLP-v1',
-      source_type: 'csv_upload',
-    },
-    {
-      id: 102,
-      timestamp: '2026-10-22T21:16:00Z',
-      prediction: 'Normal',
-      class_id: 0,
-      attack_score: 0.05,
-      threshold: 0.5,
-      severity: 'Normal',
-      model_version: 'NØX-MLP-v1',
-      source_type: 'single',
-    },
-  ];
-
-  it('renders history table rows with real timestamps and scores', async () => {
-    (api.getHistory as any).mockResolvedValue(mockEvents);
+  it('renders incident memory header and timeline records', async () => {
+    (api.getIncidents as any).mockResolvedValue({
+      total: 2,
+      offset: 0,
+      limit: 50,
+      incidents: mockIncidents,
+    });
 
     render(
       <MemoryRouter>
@@ -50,38 +55,25 @@ describe('Detection History Page', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('#00101')).toBeInTheDocument();
-      expect(screen.getByText('#00102')).toBeInTheDocument();
-    });
-
-    expect(screen.getAllByText(/MALICIOUS/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/NORMAL/i).length).toBeGreaterThan(0);
-    expect(screen.getByText('98.5%')).toBeInTheDocument();
-  });
-
-  it('opens detailed inspection modal when an event is clicked', async () => {
-    (api.getHistory as any).mockResolvedValue(mockEvents);
-
-    render(
-      <MemoryRouter>
-        <History />
-      </MemoryRouter>
-    );
+    expect(screen.getByText('NOTHING GOES UNRECORDED.')).toBeInTheDocument();
+    expect(screen.getByText('IMMUTABLE FORENSIC ARCHIVE')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('#00101')).toBeInTheDocument();
+      expect(screen.getAllByText(/Lateral Movement Toward Database/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Workstation Anomaly Observed/i).length).toBeGreaterThan(0);
     });
 
-    fireEvent.click(screen.getByText('#00101'));
-
-    expect(screen.getByText('AUDIT EVENT DETAIL #101')).toBeInTheDocument();
-    expect(screen.getByText(/DECISION THRESHOLD:/i)).toBeInTheDocument();
-    expect(screen.getByText('NØX-MLP-v1')).toBeInTheDocument();
+    expect(screen.getAllByText(/HIGH/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/LOW/i).length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no historical events exist', async () => {
-    (api.getHistory as any).mockResolvedValue([]);
+    (api.getIncidents as any).mockResolvedValue({
+      total: 0,
+      offset: 0,
+      limit: 50,
+      incidents: [],
+    });
 
     render(
       <MemoryRouter>
@@ -90,7 +82,9 @@ describe('Detection History Page', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/NO AUDIT RECORDS FOUND/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/No incident timeline events recorded in the current security epoch/i)
+      ).toBeInTheDocument();
     });
   });
 });

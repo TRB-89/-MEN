@@ -6,7 +6,7 @@ import {
   Clock, 
   Layers
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, resolveApiBaseUrl } from '../services/api';
 import { IncidentRecord } from '../types';
 import { IncidentTimeline } from '../components/incidents/IncidentTimeline';
 import { IncidentArchive } from '../components/incidents/IncidentArchive';
@@ -29,9 +29,13 @@ export const History: React.FC = () => {
     setError(null);
     try {
       const res = await api.getIncidents(undefined, undefined, 50, 0);
-      setIncidents(res.incidents || []);
-      if (res.incidents && res.incidents.length > 0 && !selectedIncident) {
-        setSelectedIncident(res.incidents[0]);
+      if (res && res.incidents) {
+        setIncidents(res.incidents);
+        if (res.incidents.length > 0 && !selectedIncident) {
+          setSelectedIncident(res.incidents[0]);
+        }
+      } else {
+        setIncidents([]);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load incident memory records.');
@@ -48,7 +52,8 @@ export const History: React.FC = () => {
   const handleExportJson = async () => {
     setIsExporting(true);
     try {
-      const res = await fetch('/api/v1/incidents/export/json');
+      const baseUrl = resolveApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/v1/incidents/export/json`);
       if (!res.ok) throw new Error('Failed to export incident memory archive.');
       const data = await res.json();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });

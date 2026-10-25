@@ -62,9 +62,9 @@ export const Overview: React.FC = () => {
     fetchConsoleTelemetry();
   }, []);
 
-  const totalEvents = stats?.total_flows_analyzed || 1420;
-  const compromisedCount = topology?.nodes.filter((n) => n.compromised).length || 1;
-  const isolatedCount = topology?.isolated_nodes.length || 0;
+  const totalEvents = stats?.total_records_analyzed ?? (stats?.predicted_malicious_count !== undefined ? ((stats.predicted_normal_count || 0) + (stats.predicted_malicious_count || 0)) : 0);
+  const compromisedCount = topology?.nodes.filter((n) => n.compromised || n.security_status === 'COMPROMISED').length || 0;
+  const isolatedCount = topology?.isolated_nodes?.length || 0;
 
   return (
     <div className="space-y-6 animate-fade-in pb-16">
