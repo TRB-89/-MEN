@@ -1,0 +1,20 @@
+{
+  "model_type": "IsolationForest",
+  "library": "scikit-learn",
+  "training_normal_samples": 30000,
+  "test_samples": 82332,
+  "contamination": 0.05,
+  "calibrated_threshold": 0.5,
+  "precision": 0.8414,
+  "recall": 0.2691,
+  "f1_score": 0.4078,
+  "false_positive_rate": 0.0621,
+  "confusion_matrix": {
+    "tn": 34701,
+    "fp": 2299,
+    "fn": 33134,
+    "tp": 12198
+  },
+  "role": "supporting_anomaly_evidence",
+  "note": "Anomaly score measures distance from normal baseline. Does not constitute proof of attack."
+}

@@ -1,0 +1,83 @@
+{
+  "model_type": "ThreatDetectionMLP",
+  "framework": "PyTorch",
+  "device": "cpu",
+  "input_dim": 191,
+  "training_samples": 35000,
+  "test_samples": 82332,
+  "epochs_trained": 10,
+  "best_val_loss": 0.12,
+  "accuracy": 0.8268,
+  "precision": 0.7678,
+  "recall": 0.9824,
+  "f1_score": 0.862,
+  "roc_auc": 0.9645,
+  "confusion_matrix": {
+    "tn": 23535,
+    "fp": 13465,
+    "fn": 799,
+    "tp": 44533
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.3068,
+      "val_loss": 0.1594,
+      "val_f1": 0.9552
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.153,
+      "val_loss": 0.1349,
+      "val_f1": 0.9554
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.1397,
+      "val_loss": 0.1287,
+      "val_f1": 0.9562
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.1334,
+      "val_loss": 0.1247,
+      "val_f1": 0.9576
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.1319,
+      "val_loss": 0.1243,
+      "val_f1": 0.958
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.1285,
+      "val_loss": 0.1223,
+      "val_f1": 0.9582
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.1268,
+      "val_loss": 0.1229,
+      "val_f1": 0.9569
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.1269,
+      "val_loss": 0.1205,
+      "val_f1": 0.9576
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.125,
+      "val_loss": 0.12,
+      "val_f1": 0.9567
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.1248,
+      "val_loss": 0.1203,
+      "val_f1": 0.9567
+    }
+  ]
+}

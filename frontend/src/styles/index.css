@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #050507;
+  --surface: #101014;
+  --surface-elevated: #17171D;
+  --border: #1E1E26;
+  --border-hairline: rgba(214, 214, 218, 0.12);
+  --primary: #F2F2F4;
+  --secondary: #A1A1AA;
+  --crimson: #B3122F;
+  --glow-red: #E34C67;
+  --muted-rose: #A95370;
+  --chrome: #D6D6DA;
+}
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--primary);
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  letter-spacing: -0.01em;
+}
+
+/* Custom Minimal Dark Industrial Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070709;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e1e26;
+  border-radius: 1px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #33333f;
+}
+
+/* Sharp Chamfered Geometry Utilities */
+.chamfer-tr {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+
+.chamfer-bl {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.chamfer-both {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+
+.chamfer-card {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+
+/* Hairline Border & Crosshair Corners */
+.border-hairline {
+  border: 1px solid var(--border-hairline);
+}
+
+.border-crimson-subtle {
+  border: 1px solid rgba(179, 18, 47, 0.35);
+}
+
+.border-industrial {
+  border: 1px solid var(--border);
+}
+
+/* Cyber Technical Grid Overlay */
+.bg-tech-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(214, 214, 218, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(214, 214, 218, 0.04) 1px, transparent 1px);
+}
+
+.bg-dot-matrix {
+  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(214, 214, 218, 0.1) 1px, transparent 1px);
+}
+
+/* Atmospheric Glow Highlights */
+.glow-crimson-radial {
+  background: radial-gradient(circle at 50% 0%, rgba(179, 18, 47, 0.18) 0%, transparent 65%);
+}
+
+.glow-magenta-ambient {
+  background: radial-gradient(circle at 80% 20%, rgba(169, 83, 112, 0.12) 0%, transparent 60%);
+}
+
+/* Scanning Beam Overlay */
+.scanline-beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(227, 76, 103, 0.6), transparent);
+  opacity: 0.75;
+  animation: scanbeam 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes scanbeam {
+  0% { transform: translateY(-50px); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(1000px); opacity: 0; }
+}
+
+/* Micro Technical Vertex Corner Marks */
+.tech-corner-tl {
+  position: relative;
+}
+.tech-corner-tl::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid #D6D6DA;
+  border-left: 2px solid #D6D6DA;
+  pointer-events: none;
+}
+
+.tech-corner-br {
+  position: relative;
+}
+.tech-corner-br::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 6px;
+  height: 6px;
+  border-bottom: 2px solid #D6D6DA;
+  border-right: 2px solid #D6D6DA;
+  pointer-events: none;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}

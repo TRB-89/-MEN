@@ -1,0 +1,11 @@
+{
+  "model_type": "ThreatDetectionMLP",
+  "framework": "PyTorch",
+  "input_dim": 191,
+  "hidden_dim1": 128,
+  "hidden_dim2": 64,
+  "dropout1": 0.3,
+  "dropout2": 0.2,
+  "activation": "ReLU",
+  "loss_function": "BCEWithLogitsLoss"
+}
