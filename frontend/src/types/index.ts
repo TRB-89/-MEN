@@ -620,3 +620,99 @@ export interface DetectionHistoryResponse {
   records: DetectionRecordItem[];
 }
 
+export interface MitreTechnique {
+  id: string;
+  name: string;
+  description: string;
+  tactics: string[];
+  platforms: string[];
+  url: string;
+  is_subtechnique: boolean;
+  created?: string;
+  modified?: string;
+  detection?: string;
+}
+
+export interface MitreSearchResponse {
+  total: number;
+  count: number;
+  limit: number;
+  offset: number;
+  query?: string | null;
+  tactic?: string | null;
+  platform?: string | null;
+  results: MitreTechnique[];
+}
+
+export interface CisaKevVulnerability {
+  cveID: string;
+  vendorProject: string;
+  product: string;
+  vulnerabilityName: string;
+  dateAdded: string;
+  shortDescription: string;
+  requiredAction: string;
+  dueDate?: string | null;
+  knownRansomwareCampaignUse?: string | null;
+  forensicTriage?: string | null;
+  notes?: string | null;
+  cwes?: string[] | null;
+}
+
+export interface CisaKevSearchResponse {
+  total: number;
+  count: number;
+  limit: number;
+  offset: number;
+  query?: string | null;
+  vendor?: string | null;
+  product?: string | null;
+  ransomware_only: boolean;
+  results: CisaKevVulnerability[];
+}
+
+export interface ThreatIntelSummary {
+  status: string;
+  offline_ready: boolean;
+  mitre_attack: {
+    total_techniques: number;
+    tactics_count: number;
+    tactics_breakdown: Record<string, number>;
+    spec_version: string;
+    source_repository: string;
+  };
+  cisa_kev: {
+    total_vulnerabilities: number;
+    known_ransomware_associated: number;
+    catalog_version: string;
+    source_repository: string;
+  };
+  last_synced_utc?: string | null;
+  attribution: Record<string, any>;
+}
+
+export interface AssetVulnMatch {
+  cve_id: string;
+  matched_by: string;
+  in_cisa_kev: boolean;
+  vulnerability_name?: string | null;
+  vendor_project?: string | null;
+  product?: string | null;
+  short_description?: string | null;
+  date_added?: string | null;
+  due_date?: string | null;
+  required_action?: string | null;
+  known_ransomware_campaign_use?: string | null;
+  notes_url?: string | null;
+  nvd_url: string;
+}
+
+export interface AssetVulnEnrichment {
+  asset_id: string;
+  asset_name: string;
+  vulnerabilities_count: number;
+  cisa_kev_matches_count: number;
+  matches: AssetVulnMatch[];
+  attribution_notice: string;
+}
+

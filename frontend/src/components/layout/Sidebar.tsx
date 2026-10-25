@@ -32,7 +32,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { num: '03', label: 'Path Prediction', to: '/prediction', icon: GitBranch, tag: 'FORECAST' },
     { num: '04', label: 'Defense Sim', to: '/defense', icon: ShieldCheck, tag: 'ZERO_TRUST' },
     { num: '05', label: 'Incident Memory', to: '/incidents', icon: Database, tag: 'ARCHIVE' },
-    { num: '06', label: 'System & ML', to: '/settings', icon: Terminal, tag: 'TELEMETRY' },
+    { num: '06', label: 'Threat Intel', to: '/intel', icon: ShieldAlert, tag: 'ATT&CK_KEV' },
+    { num: '07', label: 'System & ML', to: '/settings', icon: Terminal, tag: 'TELEMETRY' },
   ];
 
   return (

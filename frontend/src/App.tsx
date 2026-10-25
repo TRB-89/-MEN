@@ -9,6 +9,7 @@ import { Prediction } from './pages/Prediction';
 import { Defense } from './pages/Defense';
 import { History } from './pages/History';
 import { System } from './pages/System';
+import { ThreatIntel } from './pages/ThreatIntel';
 import { BackendProvider } from './services/BackendContext';
 
 import { PrecisionCursor } from './components/common/PrecisionCursor';
@@ -40,6 +41,8 @@ export const App: React.FC = () => {
             <Route path="/incidents" element={<History />} />
             <Route path="/incidents/:incidentId" element={<History />} />
             <Route path="/history" element={<History />} />
+            <Route path="/intel" element={<ThreatIntel />} />
+            <Route path="/threat-intel" element={<ThreatIntel />} />
             <Route path="/settings" element={<System />} />
             <Route path="/system" element={<System />} />
             {/* Catch-all redirect to Landing */}

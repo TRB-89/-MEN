@@ -70,6 +70,13 @@ export const CommandPaletteHUD: React.FC<{ className?: string }> = ({ className 
       action: () => navigate('/defense'),
     },
     {
+      id: 'intel',
+      title: 'Open Threat Intelligence (MITRE / CISA)',
+      shortcut: '⌘ T',
+      icon: ShieldAlert,
+      action: () => navigate('/intel'),
+    },
+    {
       id: 'assets',
       title: 'Search Assets',
       shortcut: '⌘ A',

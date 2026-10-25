@@ -1,0 +1,20 @@
+{
+  "mitre_attack": {
+    "name": "MITRE ATT&CK\u00ae Enterprise Matrix",
+    "repository": "https://github.com/mitre-attack/attack-stix-data",
+    "license": "Apache-2.0 / CC-BY-4.0",
+    "copyright": "\u00a9 2025 The MITRE Corporation.",
+    "attribution_notice": "This work contains content from MITRE ATT&CK\u00ae, reproduced and distributed with permission of The MITRE Corporation under the Apache 2.0 license. MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation.",
+    "home_url": "https://attack.mitre.org/"
+  },
+  "cisa_kev": {
+    "name": "CISA Known Exploited Vulnerabilities (KEV) Catalog",
+    "repository": "https://github.com/cisagov/kev-data",
+    "license": "CC0 1.0 Universal / Public Domain (U.S. Government Work 17 U.S.C. \u00a7 105)",
+    "copyright": "U.S. Cybersecurity and Infrastructure Security Agency (CISA)",
+    "attribution_notice": "Source: Cybersecurity and Infrastructure Security Agency (CISA) Known Exploited Vulnerabilities Catalog. Public domain government data provided as a defensive cybersecurity utility.",
+    "home_url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+  },
+  "disclaimer": "\u00d8MEN utilizes threat intelligence data solely for defensive correlation, educational risk analysis, and simulation. ATT&CK techniques reflect empirical tactics and must not be interpreted as absolute attack probabilities. CVE references represent vulnerability metadata and are only correlated to assets when matching software evidence is available.",
+  "generated_utc": "2026-10-25T14:33:00.932080+00:00"
+}

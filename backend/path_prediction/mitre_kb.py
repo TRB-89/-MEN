@@ -145,6 +145,27 @@ def resolve_mitre_technique(
         else:
             technique_id = "T1021.002"
 
+    # Query ThreatIntelService for official MITRE ATT&CK STIX details
+    official = None
+    try:
+        from backend.threat_intel.service import threat_intel_service
+        official = threat_intel_service.get_mitre_technique(technique_id)
+    except Exception:
+        pass
+
+    if official:
+        tactic_str = ", ".join(t.replace("-", " ").title() for t in official.get("tactics", [])) or "Lateral Movement"
+        return {
+            "id": official["id"],
+            "name": official["name"],
+            "tactic": tactic_str,
+            "description": official.get("description", ""),
+            "mitigation": MITRE_TECHNIQUES.get(technique_id, {}).get("mitigation", "Implement targeted segment isolation, microsegmentation, and egress filtering."),
+            "url": official.get("url", f"https://attack.mitre.org/techniques/{technique_id.replace('.', '/')}"),
+            "platforms": official.get("platforms", []),
+            "source": "MITRE ATT&CK® Enterprise STIX",
+        }
+
     return MITRE_TECHNIQUES.get(
         technique_id,
         {
@@ -153,5 +174,8 @@ def resolve_mitre_technique(
             "tactic": "Lateral Movement",
             "description": f"Adversary utilizes authorized network route across {protocol} port {port} to advance position.",
             "mitigation": "Enforce strict host-based firewalling and monitor unexpected inter-segment connection initiations.",
+            "url": f"https://attack.mitre.org/techniques/{technique_id.replace('.', '/')}",
+            "platforms": ["Network"],
+            "source": "Static Knowledge Base Fallback",
         },
     )

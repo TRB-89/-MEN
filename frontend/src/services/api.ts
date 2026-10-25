@@ -570,6 +570,66 @@ export class ApiService {
       timeoutMs,
     });
   }
+
+  // --- Threat Intelligence: MITRE ATT&CK & CISA KEV ---
+  async getThreatIntelSummary(timeoutMs: number = 15000): Promise<import('../types').ThreatIntelSummary> {
+    return this.request('/api/v1/threat-intel/summary', { timeoutMs });
+  }
+
+  async getThreatIntelAttribution(timeoutMs: number = 10000): Promise<any> {
+    return this.request('/api/v1/threat-intel/attribution', { timeoutMs });
+  }
+
+  async searchMitreTechniques(params: {
+    q?: string;
+    tactic?: string;
+    platform?: string;
+    limit?: number;
+    offset?: number;
+  } = {}, timeoutMs: number = 15000): Promise<import('../types').MitreSearchResponse> {
+    const { q, tactic, platform, limit = 50, offset = 0 } = params;
+    let query = `/api/v1/threat-intel/mitre?limit=${limit}&offset=${offset}`;
+    if (q) query += `&q=${encodeURIComponent(q)}`;
+    if (tactic) query += `&tactic=${encodeURIComponent(tactic)}`;
+    if (platform) query += `&platform=${encodeURIComponent(platform)}`;
+    return this.request(query, { timeoutMs });
+  }
+
+  async getMitreTechnique(techniqueId: string, timeoutMs: number = 10000): Promise<import('../types').MitreTechnique> {
+    return this.request(`/api/v1/threat-intel/mitre/${encodeURIComponent(techniqueId)}`, { timeoutMs });
+  }
+
+  async searchCisaKev(params: {
+    q?: string;
+    vendor?: string;
+    product?: string;
+    ransomware_only?: boolean;
+    limit?: number;
+    offset?: number;
+  } = {}, timeoutMs: number = 15000): Promise<import('../types').CisaKevSearchResponse> {
+    const { q, vendor, product, ransomware_only = false, limit = 50, offset = 0 } = params;
+    let query = `/api/v1/threat-intel/cisa-kev?limit=${limit}&offset=${offset}`;
+    if (q) query += `&q=${encodeURIComponent(q)}`;
+    if (vendor) query += `&vendor=${encodeURIComponent(vendor)}`;
+    if (product) query += `&product=${encodeURIComponent(product)}`;
+    if (ransomware_only) query += `&ransomware_only=true`;
+    return this.request(query, { timeoutMs });
+  }
+
+  async getCisaKevVulnerability(cveId: string, timeoutMs: number = 10000): Promise<import('../types').CisaKevVulnerability> {
+    return this.request(`/api/v1/threat-intel/cisa-kev/${encodeURIComponent(cveId)}`, { timeoutMs });
+  }
+
+  async getAssetVulnerabilityEnrichment(assetId: string, timeoutMs: number = 15000): Promise<import('../types').AssetVulnEnrichment> {
+    return this.request(`/api/v1/threat-intel/assets/${encodeURIComponent(assetId)}/vulnerabilities`, { timeoutMs });
+  }
+
+  async syncThreatIntel(force: boolean = true, timeoutMs: number = 15000): Promise<any> {
+    return this.request(`/api/v1/threat-intel/sync?force=${force}`, {
+      method: 'POST',
+      timeoutMs,
+    });
+  }
 }
 
 export const api = new ApiService();

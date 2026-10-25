@@ -61,6 +61,8 @@ class HopDetail(BaseModel):
     estimated_traversal_time_mins: float
     detection_indicators: List[str]
     explanation: str
+    mitre_url: Optional[str] = None
+    cisa_kev_matches: Optional[List[str]] = Field(default_factory=list)
 
 
 class CandidateAttackPath(BaseModel):

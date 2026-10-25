@@ -10,6 +10,7 @@ import { ModuleNeuralDetectionPanel } from './ModuleNeuralDetectionPanel';
 import { ModulePathPredictionPanel } from './ModulePathPredictionPanel';
 import { ModuleDefenseSimulationPanel } from './ModuleDefenseSimulationPanel';
 import { ModuleAttackReplayPanel } from './ModuleAttackReplayPanel';
+import { ModuleThreatIntelPanel } from './ModuleThreatIntelPanel';
 import { api } from '../../services/api';
 import { NetworkGraphData } from '../../types';
 
@@ -192,6 +193,11 @@ export const MasterBlacksiteOS: React.FC = () => {
 
         {/* Pod 07: Attack Replay Timeline */}
         <ModuleAttackReplayPanel />
+      </div>
+
+      {/* SECTION 08: GLOBAL THREAT INTELLIGENCE MATRIX (MITRE ATT&CK & CISA KEV) */}
+      <div className="relative z-10 pt-4">
+        <ModuleThreatIntelPanel />
       </div>
     </div>
   );

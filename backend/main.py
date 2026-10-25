@@ -33,6 +33,7 @@ from backend.api.network import router as network_router
 from backend.api.prediction import router as prediction_router
 from backend.api.defense import router as defense_router
 from backend.api.incidents import router as incidents_router
+from backend.api.threat_intel import router as threat_intel_router
 
 # Configure logging
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -64,6 +65,14 @@ async def lifespan(app: FastAPI):
             logger.info("Baseline Scikit-learn model trained and loaded.")
         except Exception as e:
             logger.warning(f"Could not pre-train baseline model: {e}")
+
+    # 3. Initialize Threat Intelligence service (MITRE ATT&CK STIX & CISA KEV)
+    try:
+        from backend.threat_intel.service import threat_intel_service
+        threat_intel_service.initialize(auto_fetch=False)
+        logger.info("Threat Intelligence service initialized with local offline caches.")
+    except Exception as e:
+        logger.warning(f"Threat Intelligence initialization warning: {e}")
 
     logger.info("ØMEN Cybersecurity API is ready to accept requests.")
     yield
@@ -159,6 +168,7 @@ app.include_router(network_router, prefix=API_V1_PREFIX)
 app.include_router(prediction_router, prefix=API_V1_PREFIX)
 app.include_router(defense_router, prefix=API_V1_PREFIX)
 app.include_router(incidents_router, prefix=API_V1_PREFIX)
+app.include_router(threat_intel_router, prefix=API_V1_PREFIX)
 
 # Compatibility upload route
 from backend.api.detection import upload_csv_flows

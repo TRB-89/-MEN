@@ -56,10 +56,21 @@ def build_hop_explanations(
 
         indicators = evidence_by_node.get(u, []) + evidence_by_node.get(v, [])
 
+        # Check CISA KEV matches for target node (strictly matching explicit CVE evidence)
+        kev_matches = []
+        try:
+            from backend.threat_intel.service import threat_intel_service
+            matched_vulns = threat_intel_service.match_asset_vulnerabilities(v_data)
+            kev_matches = [m["cve_id"] for m in matched_vulns if m.get("in_cisa_kev")]
+        except Exception:
+            pass
+
+        kev_snippet = f" Target has documented CISA KEV exploited vulnerabilities: {', '.join(kev_matches)}." if kev_matches else ""
+
         explanation = (
             f"Adversary pivots from {u_data.get('name', u)} ({u_data.get('zone')}) to "
             f"{v_data.get('name', v)} ({v_data.get('zone')}) over {protocol}/{port} via '{rel_type}'. "
-            f"Allowed by rule: '{perms}'. Exploits {mitre['name']} ({mitre['id']})."
+            f"Allowed by rule: '{perms}'. Exploits {mitre['name']} ({mitre['id']}).{kev_snippet}"
         )
 
         hops.append(
@@ -80,6 +91,8 @@ def build_hop_explanations(
                 estimated_traversal_time_mins=hop_time,
                 detection_indicators=indicators[:3],
                 explanation=explanation,
+                mitre_url=mitre.get("url"),
+                cisa_kev_matches=kev_matches,
             )
         )
 

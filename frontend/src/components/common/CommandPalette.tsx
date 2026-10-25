@@ -148,6 +148,16 @@ export const CommandPalette: React.FC = () => {
       action: () => { navigate('/incidents'); setIsOpen(false); },
     },
     {
+      id: 'cmd-intel',
+      category: 'NAVIGATION',
+      title: 'Open Threat Intelligence',
+      subtitle: 'Search MITRE ATT&CK STIX Matrix & CISA KEV Exploited CVEs',
+      badge: '⌘ T',
+      badgeColor: 'crimson',
+      icon: ShieldAlert,
+      action: () => { navigate('/intel'); setIsOpen(false); },
+    },
+    {
       id: 'cmd-history',
       category: 'NAVIGATION',
       title: 'Open Simulation History',
