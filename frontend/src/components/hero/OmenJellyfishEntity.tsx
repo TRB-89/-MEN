@@ -1,83 +1,177 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 interface JellyfishProps {
   reducedMotion?: boolean;
 }
 
-// Procedural flowing jellyfish 3D model
+/**
+ * Responsive Camera Framing Controller
+ * Dynamically adjusts camera distance and framing based on viewport aspect ratio
+ * ensuring the entire bell dome and flowing tentacles are visible without cropping.
+ */
+const ResponsiveCameraController: React.FC = () => {
+  const { camera, size } = useThree();
+
+  useFrame(() => {
+    const aspect = size.width / Math.max(1, size.height);
+    let targetZ = 6.4;
+    let targetY = -0.65;
+
+    if (aspect < 0.75) {
+      // Mobile portrait (narrow phone screens like 390x844)
+      targetZ = 8.8;
+      targetY = -0.45;
+    } else if (aspect < 1.1) {
+      // Tablets / portrait layouts (768x1024, 1024x768)
+      targetZ = 7.6;
+      targetY = -0.55;
+    } else if (aspect < 1.5) {
+      // Standard laptops (1366x768, 1440x900)
+      targetZ = 6.6;
+      targetY = -0.65;
+    } else {
+      // Widescreen desktop (1920x1080)
+      targetZ = 6.2;
+      targetY = -0.7;
+    }
+
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.08);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.08);
+    camera.lookAt(0, -0.65, 0);
+  });
+
+  return null;
+};
+
+/**
+ * Realistic Procedural 3D Jellyfish Neural Entity
+ * - High-resolution organic bell geometry with 16 undulating scalloped lappets
+ * - Translucent crimson physical material with realistic transmission and specular rim highlights
+ * - 4 undulating frilled oral arms hanging through the central axis
+ * - 48 multi-layered flowing marginal filaments with physics-inspired wave propagation
+ * - Inner glowing neural core with concentric cybernetic rings and radial canal lines
+ * - Drifting bioluminescent particles
+ */
 const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => {
   const rootGroupRef = useRef<THREE.Group>(null);
   const bellMeshRef = useRef<THREE.Mesh>(null);
   const nucleusRef = useRef<THREE.Mesh>(null);
-  const filamentsLinesRef = useRef<THREE.LineSegments>(null);
+  const filamentsRef = useRef<THREE.LineSegments>(null);
   const oralArmsRef = useRef<THREE.LineSegments>(null);
+  const meridiansRef = useRef<THREE.LineSegments>(null);
   const particlesRef = useRef<THREE.Points>(null);
+  const ringsRef = useRef<THREE.Group>(null);
 
-  // Outer bell material - translucent crimson bioluminescence
+  // Mouse parallax interaction
+  const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // 1. Organic Exumbrella Material (Deep translucent crimson with soft highlights)
   const bellMaterial = useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#D10E24'),
-        emissive: new THREE.Color('#5C0614'),
-        emissiveIntensity: 1.6,
-        roughness: 0.12,
-        metalness: 0.08,
-        transmission: 0.82,
-        thickness: 1.4,
-        ior: 1.38,
+        color: new THREE.Color('#A80C1C'),
+        emissive: new THREE.Color('#40040A'),
+        emissiveIntensity: 0.85,
+        roughness: 0.16,
+        metalness: 0.06,
+        transmission: 0.88,
+        thickness: 1.8,
+        ior: 1.34,
+        specularColor: new THREE.Color('#FF4D61'),
+        specularIntensity: 1.2,
+        clearcoat: 0.75,
+        clearcoatRoughness: 0.12,
         transparent: true,
-        opacity: 0.88,
+        opacity: 0.9,
         side: THREE.DoubleSide,
         depthWrite: false,
       }),
     []
   );
 
-  // Inner neural organ material - high intensity pulse
+  // 2. Inner Subumbrella / Velum Material
+  const innerBellMaterial = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color('#D10E24'),
+        emissive: new THREE.Color('#5C0614'),
+        emissiveIntensity: 1.4,
+        roughness: 0.3,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.55,
+        side: THREE.BackSide,
+        depthWrite: false,
+      }),
+    []
+  );
+
+  // 3. Central Neural Nucleus (Pulsing cyber core)
   const nucleusMaterial = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: new THREE.Color('#FF293F'),
         emissive: new THREE.Color('#FF293F'),
-        emissiveIntensity: 2.8,
-        roughness: 0.3,
-        metalness: 0.2,
+        emissiveIntensity: 2.6,
+        roughness: 0.25,
+        metalness: 0.15,
       }),
     []
   );
 
-  // Rim collar material
-  const rimMaterial = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: new THREE.Color('#FF293F'),
-        transparent: true,
-        opacity: 0.7,
-        side: THREE.DoubleSide,
-      }),
-    []
-  );
-
-  // Filaments line material
+  // 4. Filaments Material (Outer marginal translucent tendrils)
   const filamentMaterial = useMemo(
     () =>
       new THREE.LineBasicMaterial({
-        color: new THREE.Color('#FF293F'),
+        color: new THREE.Color('#FF3B50'),
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.72,
         blending: THREE.AdditiveBlending,
-        linewidth: 1,
       }),
     []
   );
 
-  // Oral arms (central heavier frills) material
-  const oralArmsMaterial = useMemo(
+  // 5. Central Frilled Oral Arms Material (Deeper crimson wave ribbons)
+  const oralMaterial = useMemo(
     () =>
       new THREE.LineBasicMaterial({
-        color: new THREE.Color('#D10E24'),
+        color: new THREE.Color('#E6152B'),
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+      }),
+    []
+  );
+
+  // 6. Neural Meridians / Radial Canal Lines Material
+  const meridianMaterial = useMemo(
+    () =>
+      new THREE.LineBasicMaterial({
+        color: new THREE.Color('#FF5265'),
+        transparent: true,
+        opacity: 0.65,
+        blending: THREE.AdditiveBlending,
+      }),
+    []
+  );
+
+  // 7. Drifting Bioluminescent Particles Material
+  const particleMaterial = useMemo(
+    () =>
+      new THREE.PointsMaterial({
+        color: new THREE.Color('#FF293F'),
+        size: 0.045,
         transparent: true,
         opacity: 0.75,
         blending: THREE.AdditiveBlending,
@@ -85,98 +179,159 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
     []
   );
 
-  // Construct bell geometry (elongated half-sphere dome with flared rim)
-  const bellGeometry = useMemo(() => {
-    // 64 segments around, 32 height segments
-    const geom = new THREE.SphereGeometry(1.5, 48, 32, 0, Math.PI * 2, 0, Math.PI * 0.58);
-    // Deform vertices to create umbrella / jellyfish bell contour
-    const pos = geom.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i);
-      const y = pos.getY(i);
-      const z = pos.getZ(i);
-      const r = Math.sqrt(x * x + z * z);
-      // Soft flaring at the rim
-      const flare = Math.pow(Math.max(0, 1.5 - y) / 1.5, 2.2) * 0.35;
-      pos.setX(i, x * (1 + flare));
-      pos.setZ(i, z * (1 + flare));
-      // Bell curvature
-      pos.setY(i, y * 1.15);
+  // --- Construct Procedural Organic Scalloped Bell Geometry ---
+  const { bellGeom, innerBellGeom, basePositions } = useMemo(() => {
+    // 64 radial segments, 40 height rings
+    const radialSegs = 64;
+    const heightSegs = 36;
+    const geom = new THREE.BufferGeometry();
+    const innerGeom = new THREE.BufferGeometry();
+
+    const vertices: number[] = [];
+    const innerVertices: number[] = [];
+    const indices: number[] = [];
+
+    for (let yIdx = 0; yIdx <= heightSegs; yIdx++) {
+      const v = yIdx / heightSegs; // 0 at apex, 1 at rim
+      // Organic bell parabolic curve
+      const y = 1.35 * (1 - Math.pow(v, 1.35));
+      // Bell radius increases smoothly toward the rim with flaring
+      const baseR = 1.45 * Math.pow(Math.sin(v * Math.PI * 0.5), 0.78) * (1 + 0.12 * Math.pow(v, 3));
+
+      for (let rIdx = 0; rIdx <= radialSegs; rIdx++) {
+        const u = rIdx / radialSegs;
+        const theta = u * Math.PI * 2;
+        // 16 gentle organic scallops on the margin lappets
+        const scallop = 1 + 0.035 * Math.pow(v, 2.5) * Math.cos(16 * theta);
+        const r = baseR * scallop;
+
+        const x = Math.cos(theta) * r;
+        const z = Math.sin(theta) * r;
+
+        vertices.push(x, y, z);
+        innerVertices.push(x * 0.94, y * 0.96 - 0.02, z * 0.94);
+      }
     }
+
+    // Build faces
+    for (let yIdx = 0; yIdx < heightSegs; yIdx++) {
+      for (let rIdx = 0; rIdx < radialSegs; rIdx++) {
+        const p1 = yIdx * (radialSegs + 1) + rIdx;
+        const p2 = p1 + 1;
+        const p3 = (yIdx + 1) * (radialSegs + 1) + rIdx;
+        const p4 = p3 + 1;
+
+        indices.push(p1, p3, p2);
+        indices.push(p2, p3, p4);
+      }
+    }
+
+    const posArray = new Float32Array(vertices);
+    geom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    geom.setIndex(indices);
     geom.computeVertexNormals();
-    return geom;
+
+    const innerPosArray = new Float32Array(innerVertices);
+    innerGeom.setAttribute('position', new THREE.BufferAttribute(innerPosArray, 3));
+    innerGeom.setIndex(indices);
+    innerGeom.computeVertexNormals();
+
+    // Cache initial vertex positions for pulsation animation
+    const basePositionsCopy = new Float32Array(posArray);
+
+    return { bellGeom: geom, innerBellGeom: innerGeom, basePositions: basePositionsCopy };
   }, []);
 
-  // Construct outer filaments (32 strands hanging down ~5.5 units)
-  const strandCount = 36;
-  const vertsPerStrand = 26;
-  const { filamentGeom, strandInitialData } = useMemo(() => {
-    const totalVerts = strandCount * (vertsPerStrand - 1) * 2;
-    const positions = new Float32Array(totalVerts * 3);
-    const strandData: Array<{
-      radius: number;
-      angle: number;
-      length: number;
-      speed: number;
-      phase: number;
-      frequency: number;
-      amplitude: number;
-    }> = [];
+  // --- Construct 16 Neural Radial Meridian Lines ---
+  const meridianGeom = useMemo(() => {
+    const linesCount = 16;
+    const pointsPerLine = 20;
+    const totalPoints = linesCount * (pointsPerLine - 1) * 2;
+    const positions = new Float32Array(totalPoints * 3);
+    let p = 0;
 
-    let pIdx = 0;
-    for (let s = 0; s < strandCount; s++) {
-      const angle = (s / strandCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.15;
-      const radius = 1.35 + (Math.random() - 0.5) * 0.35;
-      const length = 4.0 + Math.random() * 2.5; // reaches deep downwards
-      const speed = 1.2 + Math.random() * 0.8;
-      const phase = Math.random() * Math.PI * 2;
-      const frequency = 1.6 + Math.random() * 0.8;
-      const amplitude = 0.25 + Math.random() * 0.2;
+    for (let m = 0; m < linesCount; m++) {
+      const theta = (m / linesCount) * Math.PI * 2;
+      for (let i = 0; i < pointsPerLine - 1; i++) {
+        const v0 = i / (pointsPerLine - 1);
+        const y0 = 1.34 * (1 - Math.pow(v0, 1.35));
+        const r0 = 1.44 * Math.pow(Math.sin(v0 * Math.PI * 0.5), 0.78) * (1 + 0.12 * Math.pow(v0, 3));
+        const x0 = Math.cos(theta) * r0;
+        const z0 = Math.sin(theta) * r0;
 
-      strandData.push({ radius, angle, length, speed, phase, frequency, amplitude });
+        const v1 = (i + 1) / (pointsPerLine - 1);
+        const y1 = 1.34 * (1 - Math.pow(v1, 1.35));
+        const r1 = 1.44 * Math.pow(Math.sin(v1 * Math.PI * 0.5), 0.78) * (1 + 0.12 * Math.pow(v1, 3));
+        const x1 = Math.cos(theta) * r1;
+        const z1 = Math.sin(theta) * r1;
 
-      for (let v = 0; v < vertsPerStrand - 1; v++) {
-        // Line segment: point v to point v + 1
-        // placeholder coordinates; updated every frame in useFrame
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
-
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
+        positions[p++] = x0;
+        positions[p++] = y0;
+        positions[p++] = z0;
+        positions[p++] = x1;
+        positions[p++] = y1;
+        positions[p++] = z1;
       }
     }
 
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    return { filamentGeom: geom, strandInitialData: strandData };
-  }, [strandCount, vertsPerStrand]);
+    return geom;
+  }, []);
 
-  // Construct central oral arms (8 spiral wavy frills)
-  const oralCount = 8;
-  const vertsPerOral = 32;
+  // --- Construct 48 Marginal Filaments (Tendrils) ---
+  const strandCount = 48;
+  const vertsPerStrand = 30;
+  const { filamentGeom, strandData } = useMemo(() => {
+    const totalVerts = strandCount * (vertsPerStrand - 1) * 2;
+    const positions = new Float32Array(totalVerts * 3);
+    const data: Array<{
+      radius: number;
+      angle: number;
+      length: number;
+      speed: number;
+      phase: number;
+      freq: number;
+      amp: number;
+    }> = [];
+
+    for (let s = 0; s < strandCount; s++) {
+      const angle = (s / strandCount) * Math.PI * 2;
+      const radius = 1.42 + (Math.sin(s * 3.7) * 0.08);
+      // Varied lengths: between 2.8 and 4.2 units so tentacles never clip camera view
+      const length = 2.8 + (Math.sin(s * 1.5) + 1) * 0.65;
+      const speed = 1.1 + Math.sin(s * 2.3) * 0.3;
+      const phase = s * 0.35;
+      const freq = 1.8 + Math.cos(s * 1.7) * 0.4;
+      const amp = 0.22 + Math.sin(s * 4.1) * 0.08;
+
+      data.push({ radius, angle, length, speed, phase, freq, amp });
+    }
+
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return { filamentGeom: geom, strandData: data };
+  }, []);
+
+  // --- Construct 4 Central Frilled Oral Arms ---
+  const oralCount = 6;
+  const vertsPerOral = 36;
   const { oralGeom, oralData } = useMemo(() => {
     const totalVerts = oralCount * (vertsPerOral - 1) * 2;
     const positions = new Float32Array(totalVerts * 3);
-    const data: Array<{ angle: number; length: number; speed: number; phase: number }> = [];
+    const data: Array<{
+      angle: number;
+      length: number;
+      speed: number;
+      phase: number;
+    }> = [];
 
-    let pIdx = 0;
-    for (let s = 0; s < oralCount; s++) {
-      const angle = (s / oralCount) * Math.PI * 2;
-      const length = 3.6 + Math.random() * 1.5;
-      const speed = 1.0 + Math.random() * 0.5;
-      const phase = (s / oralCount) * Math.PI * 2;
+    for (let o = 0; o < oralCount; o++) {
+      const angle = (o / oralCount) * Math.PI * 2;
+      const length = 3.2 + (o % 2) * 0.4;
+      const speed = 0.95 + o * 0.12;
+      const phase = o * (Math.PI / 3);
       data.push({ angle, length, speed, phase });
-
-      for (let v = 0; v < vertsPerOral - 1; v++) {
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
-        positions[pIdx++] = 0;
-      }
     }
 
     const geom = new THREE.BufferGeometry();
@@ -184,14 +339,14 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
     return { oralGeom: geom, oralData: data };
   }, []);
 
-  // Drifting neural bioluminescent particles
-  const particleCount = 110;
+  // --- Construct Drifting Bioluminescent Particles ---
+  const particleCount = 85;
   const particleGeom = useMemo(() => {
     const positions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-      const r = 0.8 + Math.random() * 3.2;
       const theta = Math.random() * Math.PI * 2;
-      const y = 1.5 - Math.random() * 6.5; // spread from bell down to tendril tips
+      const r = 0.4 + Math.random() * 2.4;
+      const y = -3.2 + Math.random() * 4.6;
       positions[i * 3] = Math.cos(theta) * r;
       positions[i * 3 + 1] = y;
       positions[i * 3 + 2] = Math.sin(theta) * r;
@@ -201,175 +356,224 @@ const JellyfishModel: React.FC<JellyfishProps> = ({ reducedMotion = false }) => 
     return geom;
   }, []);
 
-  const particleMaterial = useMemo(
-    () =>
-      new THREE.PointsMaterial({
-        color: new THREE.Color('#FF293F'),
-        size: 0.05,
-        transparent: true,
-        opacity: 0.8,
-        blending: THREE.AdditiveBlending,
-      }),
-    []
-  );
+  // Cleanup WebGL resources on unmount
+  useEffect(() => {
+    return () => {
+      bellGeom.dispose();
+      innerBellGeom.dispose();
+      meridianGeom.dispose();
+      filamentGeom.dispose();
+      oralGeom.dispose();
+      particleGeom.dispose();
+      bellMaterial.dispose();
+      innerBellMaterial.dispose();
+      nucleusMaterial.dispose();
+      filamentMaterial.dispose();
+      oralMaterial.dispose();
+      meridianMaterial.dispose();
+      particleMaterial.dispose();
+    };
+  }, [
+    bellGeom,
+    innerBellGeom,
+    meridianGeom,
+    filamentGeom,
+    oralGeom,
+    particleGeom,
+    bellMaterial,
+    innerBellMaterial,
+    nucleusMaterial,
+    filamentMaterial,
+    oralMaterial,
+    meridianMaterial,
+    particleMaterial,
+  ]);
 
-  // Animation frame loop
+  // --- Animation Loop ---
   useFrame((state, delta) => {
-    if (!rootGroupRef.current) return;
-    const time = state.clock.elapsedTime;
+    const time = state.clock.getElapsedTime();
 
-    if (!reducedMotion) {
-      // 1. Organic swimming contraction cycle (quick pulse up, gentle float down)
-      const pulsePhase = time * 1.6;
-      // asymmetric contraction wave
-      const pulseRaw = Math.sin(pulsePhase);
-      const contraction = Math.pow(Math.max(0, pulseRaw), 2.2);
-      const relaxation = -Math.pow(Math.max(0, -pulseRaw), 1.8) * 0.3;
-      const pulse = contraction + relaxation;
+    // 1. Root group organic swimming translation & gentle cursor parallax
+    if (rootGroupRef.current) {
+      if (!reducedMotion) {
+        // Natural biological propulsion: quick contraction followed by slow glide
+        const swimCycle = Math.sin(time * 1.35);
+        const floatY = 0.05 + swimCycle * 0.12;
+        rootGroupRef.current.position.y = floatY;
 
-      // Bell shape breathes with pulse
-      if (bellMeshRef.current) {
-        const sx = 1 - pulse * 0.12;
-        const sy = 1 + pulse * 0.16;
-        const sz = 1 - pulse * 0.12;
-        bellMeshRef.current.scale.set(sx, sy, sz);
+        // Subtle cursor parallax
+        const targetRotX = mouseRef.current.y * 0.12;
+        const targetRotY = mouseRef.current.x * 0.16 + Math.sin(time * 0.4) * 0.05;
+        rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(rootGroupRef.current.rotation.x, targetRotX, delta * 2.5);
+        rootGroupRef.current.rotation.y = THREE.MathUtils.lerp(rootGroupRef.current.rotation.y, targetRotY, delta * 2.5);
       }
+    }
 
-      // Organ nucleus pulses with high intensity
-      if (nucleusRef.current) {
-        const nScale = 1 + Math.sin(time * 3.2) * 0.14 + pulse * 0.15;
-        nucleusRef.current.scale.set(nScale, nScale, nScale);
+    // 2. Bell Swimming Contraction / Expansion
+    if (bellMeshRef.current && !reducedMotion) {
+      const posAttr = bellMeshRef.current.geometry.attributes.position as THREE.BufferAttribute;
+      const posArray = posAttr.array as Float32Array;
+      const count = posAttr.count;
+
+      // Realistic pulse cycle: contraction is snappy, recovery is slow
+      const pulsePhase = Math.sin(time * 1.35);
+      const contractFactor = 1.0 - Math.max(0, pulsePhase) * 0.14 + Math.min(0, pulsePhase) * 0.06;
+      const apexPush = Math.max(0, pulsePhase) * 0.12;
+
+      for (let i = 0; i < count; i++) {
+        const i3 = i * 3;
+        const baseX = basePositions[i3];
+        const baseY = basePositions[i3 + 1];
+        const baseZ = basePositions[i3 + 2];
+
+        // Apex pushes up slightly while rim contracts inwards
+        const heightRatio = Math.max(0, baseY / 1.35);
+        const rimInfluence = Math.pow(1 - heightRatio, 1.2);
+
+        posArray[i3] = baseX * (1 - (1 - contractFactor) * rimInfluence);
+        posArray[i3 + 1] = baseY + apexPush * heightRatio;
+        posArray[i3 + 2] = baseZ * (1 - (1 - contractFactor) * rimInfluence);
       }
+      posAttr.needsUpdate = true;
+    }
 
-      // Root entity hovering and subtle tilt towards mouse pointer
-      rootGroupRef.current.position.y = Math.sin(time * 0.8) * 0.25 + pulse * 0.18;
-      rootGroupRef.current.rotation.y += delta * 0.12;
-      rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(
-        rootGroupRef.current.rotation.x,
-        -state.pointer.y * 0.28 + 0.15,
-        0.04
-      );
-      rootGroupRef.current.rotation.z = THREE.MathUtils.lerp(
-        rootGroupRef.current.rotation.z,
-        state.pointer.x * 0.22,
-        0.04
-      );
+    // 3. Inner Nucleus Pulse & Cybernetic Rings Rotation
+    if (nucleusRef.current) {
+      const pulse = 1.0 + Math.sin(time * 2.7) * 0.08;
+      nucleusRef.current.scale.set(pulse, pulse, pulse);
+      if (!reducedMotion) {
+        nucleusMaterial.emissiveIntensity = 2.4 + Math.sin(time * 2.7) * 0.8;
+      }
+    }
 
-      // 2. Update flowing outer filaments
-      if (filamentsLinesRef.current) {
-        const posAttr = filamentsLinesRef.current.geometry.attributes.position as THREE.BufferAttribute;
-        const posArray = posAttr.array as Float32Array;
-        let idx = 0;
+    if (ringsRef.current && !reducedMotion) {
+      ringsRef.current.rotation.z += delta * 0.15;
+    }
 
-        for (let s = 0; s < strandCount; s++) {
-          const sd = strandInitialData[s];
-          const bellRimY = 0.05;
+    // 4. Update 48 Marginal Filaments (Physics Wave Propagation)
+    if (filamentsRef.current && !reducedMotion) {
+      const posAttr = filamentsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+      const posArray = posAttr.array as Float32Array;
+      let idx = 0;
 
-          for (let v = 0; v < vertsPerStrand - 1; v++) {
-            // Vertex v
-            const t0 = v / (vertsPerStrand - 1);
-            const y0 = bellRimY - t0 * sd.length;
-            const wave0 = Math.sin(time * sd.speed + t0 * sd.frequency * 4 + sd.phase) * sd.amplitude * t0;
-            const waveZ0 = Math.cos(time * sd.speed * 0.8 + t0 * sd.frequency * 3 + sd.phase) * sd.amplitude * t0;
-            const r0 = sd.radius * (1 - t0 * 0.35);
-            const x0 = Math.cos(sd.angle) * r0 + wave0;
-            const z0 = Math.sin(sd.angle) * r0 + waveZ0;
+      // Bell rim contraction offset for filament anchors
+      const pulsePhase = Math.sin(time * 1.35);
+      const rimContract = 1.0 - Math.max(0, pulsePhase) * 0.14 + Math.min(0, pulsePhase) * 0.06;
 
-            // Vertex v + 1
-            const t1 = (v + 1) / (vertsPerStrand - 1);
-            const y1 = bellRimY - t1 * sd.length;
-            const wave1 = Math.sin(time * sd.speed + t1 * sd.frequency * 4 + sd.phase) * sd.amplitude * t1;
-            const waveZ1 = Math.cos(time * sd.speed * 0.8 + t1 * sd.frequency * 3 + sd.phase) * sd.amplitude * t1;
-            const r1 = sd.radius * (1 - t1 * 0.35);
-            const x1 = Math.cos(sd.angle) * r1 + wave1;
-            const z1 = Math.sin(sd.angle) * r1 + waveZ1;
+      for (let s = 0; s < strandCount; s++) {
+        const sd = strandData[s];
+        const currentRadius = sd.radius * rimContract;
 
-            posArray[idx++] = x0;
-            posArray[idx++] = y0;
-            posArray[idx++] = z0;
+        for (let v = 0; v < vertsPerStrand - 1; v++) {
+          // Point v
+          const t0 = v / (vertsPerStrand - 1);
+          const y0 = 0.05 - t0 * sd.length;
+          // Fluid wave superposition with t^1.3 dampening at rim anchor
+          const waveAmp0 = sd.amp * Math.pow(t0, 1.3);
+          const waveX0 = Math.sin(time * sd.speed + t0 * sd.freq * 4.5 + sd.phase) * waveAmp0;
+          const waveZ0 = Math.cos(time * sd.speed * 0.85 + t0 * sd.freq * 3.8 + sd.phase) * waveAmp0;
 
-            posArray[idx++] = x1;
-            posArray[idx++] = y1;
-            posArray[idx++] = z1;
-          }
+          const r0 = currentRadius * (1 - t0 * 0.28);
+          const x0 = Math.cos(sd.angle) * r0 + waveX0;
+          const z0 = Math.sin(sd.angle) * r0 + waveZ0;
+
+          // Point v + 1
+          const t1 = (v + 1) / (vertsPerStrand - 1);
+          const y1 = 0.05 - t1 * sd.length;
+          const waveAmp1 = sd.amp * Math.pow(t1, 1.3);
+          const waveX1 = Math.sin(time * sd.speed + t1 * sd.freq * 4.5 + sd.phase) * waveAmp1;
+          const waveZ1 = Math.cos(time * sd.speed * 0.85 + t1 * sd.freq * 3.8 + sd.phase) * waveAmp1;
+
+          const r1 = currentRadius * (1 - t1 * 0.28);
+          const x1 = Math.cos(sd.angle) * r1 + waveX1;
+          const z1 = Math.sin(sd.angle) * r1 + waveZ1;
+
+          posArray[idx++] = x0;
+          posArray[idx++] = y0;
+          posArray[idx++] = z0;
+          posArray[idx++] = x1;
+          posArray[idx++] = y1;
+          posArray[idx++] = z1;
         }
-        posAttr.needsUpdate = true;
       }
+      posAttr.needsUpdate = true;
+    }
 
-      // 3. Update central oral arms
-      if (oralArmsRef.current) {
-        const posAttr = oralArmsRef.current.geometry.attributes.position as THREE.BufferAttribute;
-        const posArray = posAttr.array as Float32Array;
-        let idx = 0;
+    // 5. Update 6 Frilled Oral Arms (Undulating Central Ribbons)
+    if (oralArmsRef.current && !reducedMotion) {
+      const posAttr = oralArmsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+      const posArray = posAttr.array as Float32Array;
+      let idx = 0;
 
-        for (let s = 0; s < oralCount; s++) {
-          const od = oralData[s];
-          for (let v = 0; v < vertsPerOral - 1; v++) {
-            const t0 = v / (vertsPerOral - 1);
-            const y0 = -0.15 - t0 * od.length;
-            const spiralAngle0 = od.angle + t0 * 3.0 + Math.sin(time * od.speed + t0 * 5) * 0.4;
-            const r0 = 0.55 * (1 - t0 * 0.5) + Math.sin(time * 1.5 + t0 * 6) * 0.1;
-            const x0 = Math.cos(spiralAngle0) * r0;
-            const z0 = Math.sin(spiralAngle0) * r0;
+      for (let o = 0; o < oralCount; o++) {
+        const od = oralData[o];
+        for (let v = 0; v < vertsPerOral - 1; v++) {
+          const t0 = v / (vertsPerOral - 1);
+          const y0 = -0.05 - t0 * od.length;
+          const spiral0 = od.angle + t0 * 2.5 + Math.sin(time * od.speed + t0 * 4.2 + od.phase) * 0.35;
+          const r0 = 0.42 * (1 - t0 * 0.4) + Math.sin(time * 1.6 + t0 * 5) * 0.08;
+          const x0 = Math.cos(spiral0) * r0;
+          const z0 = Math.sin(spiral0) * r0;
 
-            const t1 = (v + 1) / (vertsPerOral - 1);
-            const y1 = -0.15 - t1 * od.length;
-            const spiralAngle1 = od.angle + t1 * 3.0 + Math.sin(time * od.speed + t1 * 5) * 0.4;
-            const r1 = 0.55 * (1 - t1 * 0.5) + Math.sin(time * 1.5 + t1 * 6) * 0.1;
-            const x1 = Math.cos(spiralAngle1) * r1;
-            const z1 = Math.sin(spiralAngle1) * r1;
+          const t1 = (v + 1) / (vertsPerOral - 1);
+          const y1 = -0.05 - t1 * od.length;
+          const spiral1 = od.angle + t1 * 2.5 + Math.sin(time * od.speed + t1 * 4.2 + od.phase) * 0.35;
+          const r1 = 0.42 * (1 - t1 * 0.4) + Math.sin(time * 1.6 + t1 * 5) * 0.08;
+          const x1 = Math.cos(spiral1) * r1;
+          const z1 = Math.sin(spiral1) * r1;
 
-            posArray[idx++] = x0;
-            posArray[idx++] = y0;
-            posArray[idx++] = z0;
-
-            posArray[idx++] = x1;
-            posArray[idx++] = y1;
-            posArray[idx++] = z1;
-          }
+          posArray[idx++] = x0;
+          posArray[idx++] = y0;
+          posArray[idx++] = z0;
+          posArray[idx++] = x1;
+          posArray[idx++] = y1;
+          posArray[idx++] = z1;
         }
-        posAttr.needsUpdate = true;
       }
+      posAttr.needsUpdate = true;
+    }
 
-      // 4. Drift bioluminescent particles
-      if (particlesRef.current) {
-        particlesRef.current.rotation.y -= delta * 0.08;
-      }
+    // 6. Drift Particles
+    if (particlesRef.current && !reducedMotion) {
+      particlesRef.current.rotation.y += delta * 0.05;
     }
   });
 
   return (
-    <group ref={rootGroupRef} position={[0, 0.4, 0]}>
-      {/* 1. Translucent Crimson Jellyfish Bell Dome */}
-      <mesh ref={bellMeshRef} geometry={bellGeometry} material={bellMaterial} />
+    <group ref={rootGroupRef} position={[0, 0, 0]}>
+      {/* 1. Outer Translucent Crimson Jellyfish Bell */}
+      <mesh ref={bellMeshRef} geometry={bellGeom} material={bellMaterial} />
 
-      {/* 2. Inner Glowing Neural Nucleus / Cybernetic Brain */}
-      <mesh ref={nucleusRef} material={nucleusMaterial} position={[0, 0.5, 0]}>
-        <sphereGeometry args={[0.55, 32, 32]} />
+      {/* 2. Inner Subumbrella / Velum Membrane */}
+      <mesh geometry={innerBellGeom} material={innerBellMaterial} />
+
+      {/* 3. Neural Radial Meridian Canal Lines */}
+      <lineSegments ref={meridiansRef} geometry={meridianGeom} material={meridianMaterial} />
+
+      {/* 4. Central Glowing Neural Nucleus */}
+      <mesh ref={nucleusRef} material={nucleusMaterial} position={[0, 0.45, 0]}>
+        <sphereGeometry args={[0.38, 32, 32]} />
       </mesh>
 
-      {/* 3. Concentric Inner Neural Rings */}
-      <mesh position={[0, 0.5, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.75, 0.8, 36]} />
-        <meshBasicMaterial color="#FF293F" transparent opacity={0.45} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[0, 0.3, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[1.1, 1.15, 48]} />
-        <meshBasicMaterial color="#D10E24" transparent opacity={0.35} side={THREE.DoubleSide} />
-      </mesh>
+      {/* 5. Concentric Cybernetic Meridian Rings */}
+      <group ref={ringsRef} position={[0, 0.45, 0]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.55, 0.58, 48]} />
+          <meshBasicMaterial color="#FF293F" transparent opacity={0.5} side={THREE.DoubleSide} />
+        </mesh>
+        <mesh rotation={[Math.PI / 2.2, 0.4, 0]}>
+          <ringGeometry args={[0.82, 0.85, 48]} />
+          <meshBasicMaterial color="#D10E24" transparent opacity={0.35} side={THREE.DoubleSide} />
+        </mesh>
+      </group>
 
-      {/* 4. Bell Margin Luminous Rim */}
-      <mesh position={[0, 0.08, 0]} rotation={[Math.PI / 2, 0, 0]} material={rimMaterial}>
-        <torusGeometry args={[1.52, 0.04, 16, 64]} />
-      </mesh>
+      {/* 6. Central Frilled Oral Arms */}
+      <lineSegments ref={oralArmsRef} geometry={oralGeom} material={oralMaterial} />
 
-      {/* 5. Flowing Filaments (Outer Strands) */}
-      <lineSegments ref={filamentsLinesRef} geometry={filamentGeom} material={filamentMaterial} />
+      {/* 7. 48 Flowing Marginal Filaments */}
+      <lineSegments ref={filamentsRef} geometry={filamentGeom} material={filamentMaterial} />
 
-      {/* 6. Central Oral Arms (Deep crimson wave ribbons) */}
-      <lineSegments ref={oralArmsRef} geometry={oralGeom} material={oralArmsMaterial} />
-
-      {/* 7. Drifting Neural Bioluminescent Particles */}
+      {/* 8. Drifting Bioluminescent Particles */}
       <points ref={particlesRef} geometry={particleGeom} material={particleMaterial} />
     </group>
   );
@@ -402,10 +606,8 @@ export const OmenJellyfishEntity: React.FC<{ className?: string }> = ({ classNam
   if (!hasWebGL) {
     return (
       <div className={`relative flex items-center justify-center p-8 ${className}`}>
-        <div className="relative w-80 h-96 flex flex-col items-center justify-center">
-          {/* Bioluminescent pulse backdrop */}
+        <div className="relative w-72 h-96 flex flex-col items-center justify-center">
           <div className="absolute inset-0 bg-radial-gradient from-crimson/30 via-crimson/10 to-transparent rounded-full blur-2xl animate-pulse-crimson" />
-          {/* Gothic Jellyfish Silhouette */}
           <svg viewBox="0 0 200 260" className="w-full h-full drop-shadow-[0_0_35px_rgba(255,41,63,0.6)]">
             <defs>
               <radialGradient id="bellGlow" cx="50%" cy="30%" r="70%">
@@ -419,17 +621,14 @@ export const OmenJellyfishEntity: React.FC<{ className?: string }> = ({ classNam
                 <stop offset="100%" stopColor="#5C0614" stopOpacity="0" />
               </linearGradient>
             </defs>
-            {/* Bell Dome */}
             <path
               d="M 30,90 C 30,25 170,25 170,90 C 170,105 155,108 140,102 C 125,96 110,105 100,105 C 90,105 75,96 60,102 C 45,108 30,105 30,90 Z"
               fill="url(#bellGlow)"
               stroke="#FF293F"
               strokeWidth="1.5"
             />
-            {/* Neural nucleus */}
             <circle cx="100" cy="65" r="16" fill="#FF293F" opacity="0.8" />
             <circle cx="100" cy="65" r="8" fill="#FFFFFF" opacity="0.9" />
-            {/* Strands */}
             <path d="M 50,102 Q 40,150 55,200 T 50,250" fill="none" stroke="url(#tendrilFade)" strokeWidth="1.5" />
             <path d="M 75,105 Q 65,160 80,210 T 75,255" fill="none" stroke="url(#tendrilFade)" strokeWidth="1.8" />
             <path d="M 100,105 Q 110,165 95,215 T 100,260" fill="none" stroke="url(#tendrilFade)" strokeWidth="2.2" />
@@ -442,29 +641,38 @@ export const OmenJellyfishEntity: React.FC<{ className?: string }> = ({ classNam
   }
 
   return (
-    <div className={`relative flex items-center justify-center overflow-visible ${className}`}>
+    <div className={`relative flex items-center justify-center overflow-visible pointer-events-none ${className}`}>
       {/* Background Volumetric Crimson Ambient Glow */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-45 blur-3xl scale-150"
+        className="absolute inset-0 pointer-events-none opacity-40 blur-3xl scale-125"
         style={{
-          background: 'radial-gradient(circle at 50% 35%, rgba(255,41,63,0.32) 0%, rgba(209,14,36,0.18) 35%, rgba(92,6,20,0.08) 60%, transparent 80%)',
+          background:
+            'radial-gradient(circle at 50% 40%, rgba(255,41,63,0.28) 0%, rgba(209,14,36,0.14) 35%, rgba(92,6,20,0.06) 65%, transparent 80%)',
         }}
       />
 
-      {/* R3F Canvas */}
+      {/* R3F Canvas with responsive camera framing and unclipped dimensions */}
       <Canvas
-        camera={{ position: [0, 0.2, 5.8], fov: 48 }}
+        camera={{ position: [0, -0.65, 6.4], fov: 44, near: 0.1, far: 50 }}
         dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-        className="w-full h-full min-h-[580px] max-w-[720px] max-h-[820px] pointer-events-auto"
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: 'high-performance',
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.15,
+        }}
+        className="w-full h-full pointer-events-auto"
       >
-        <ambientLight intensity={0.5} />
-        {/* Cinematic crimson and top chrome key lights */}
-        <directionalLight position={[0, 6, 4]} intensity={1.4} color="#FFFFFF" />
-        <directionalLight position={[0, -4, 2]} intensity={1.8} color="#D10E24" />
-        <pointLight position={[0, 0.6, 1.2]} intensity={3.5} color="#FF293F" distance={6} />
-        <pointLight position={[-3, -2, -2]} intensity={1.5} color="#5C0614" />
-        <pointLight position={[3, -2, -2]} intensity={1.5} color="#5C0614" />
+        <ResponsiveCameraController />
+
+        <ambientLight intensity={0.4} />
+        {/* Cinematic crimson key and soft top chrome lights */}
+        <directionalLight position={[0, 6, 4]} intensity={1.5} color="#FFFFFF" />
+        <directionalLight position={[0, -5, 3]} intensity={2.2} color="#D10E24" />
+        <pointLight position={[0, 0.45, 1.2]} intensity={3.8} color="#FF293F" distance={7} />
+        <pointLight position={[-3, -1, -2]} intensity={1.6} color="#5C0614" />
+        <pointLight position={[3, -1, -2]} intensity={1.6} color="#5C0614" />
 
         <JellyfishModel reducedMotion={reducedMotion} />
       </Canvas>

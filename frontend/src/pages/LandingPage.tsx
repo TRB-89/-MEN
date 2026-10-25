@@ -398,39 +398,39 @@ export const LandingPage: React.FC = () => {
       {/* SECTION 3 & 4 — HERO PAGE WITH JELLYFISH CENTERPIECE & FLOATING METRIC CARDS */}
       <section
         ref={heroRef}
-        className="relative min-h-screen pt-28 pb-16 px-6 lg:px-12 max-w-7xl mx-auto flex flex-col justify-center z-10"
+        className="relative min-h-screen pt-28 pb-12 px-6 lg:px-12 max-w-7xl mx-auto flex flex-col justify-between z-10 overflow-visible"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center min-h-[720px]">
-          {/* Left Hero Content */}
-          <div className="lg:col-span-6 space-y-8 z-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center min-h-[680px] lg:min-h-[740px] my-auto">
+          {/* Left Column (Cols 1–5): Branding, Headlines, Description, CTA */}
+          <div className="lg:col-span-5 space-y-7 z-30 pointer-events-auto">
             {/* Technical Sub-badge */}
             <div
               ref={badgeRef}
-              className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#161619]/80 border border-[#D10E24]/30 font-technical text-[11px] text-[#FF293F] tracking-widest uppercase shadow-[0_0_15px_rgba(209,14,36,0.2)]"
+              className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#161619]/90 border border-[#D10E24]/30 font-technical text-[11px] text-[#FF293F] tracking-widest uppercase shadow-[0_0_15px_rgba(209,14,36,0.2)]"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF293F] animate-ping" />
-              <span>// PREDICTIVE CYBER THREAT INTELLIGENCE & AUTONOMOUS DEFENSE</span>
+              <span>// PREDICTIVE CYBER THREAT INTELLIGENCE</span>
             </div>
 
             {/* Oversized Masked Headlines */}
             <div ref={headlineRef} className="space-y-1 overflow-hidden">
               <div className="overflow-hidden">
-                <h1 className="font-heading text-4xl sm:text-6xl xl:text-7xl font-extrabold uppercase tracking-tight text-[#F5F5F5] leading-[0.98]">
+                <h1 className="font-heading text-4xl sm:text-5xl xl:text-6xl font-extrabold uppercase tracking-tight text-[#F5F5F5] leading-[0.98]">
                   PREDICT THE
                 </h1>
               </div>
               <div className="overflow-hidden">
-                <h1 className="font-heading text-4xl sm:text-6xl xl:text-7xl font-extrabold uppercase tracking-tight text-[#F5F5F5] leading-[0.98]">
+                <h1 className="font-heading text-4xl sm:text-5xl xl:text-6xl font-extrabold uppercase tracking-tight text-[#F5F5F5] leading-[0.98]">
                   UNKNOWN.
                 </h1>
               </div>
               <div className="overflow-hidden pt-1">
-                <h1 className="font-heading text-4xl sm:text-6xl xl:text-7xl font-extrabold uppercase tracking-tight leading-[0.98] text-transparent bg-clip-text bg-gradient-to-r from-[#FF293F] via-[#D10E24] to-[#8C0A19]">
+                <h1 className="font-heading text-4xl sm:text-5xl xl:text-6xl font-extrabold uppercase tracking-tight leading-[0.98] text-transparent bg-clip-text bg-gradient-to-r from-[#FF293F] via-[#D10E24] to-[#8C0A19]">
                   CONTROL THE
                 </h1>
               </div>
               <div className="overflow-hidden">
-                <h1 className="font-heading text-4xl sm:text-6xl xl:text-7xl font-extrabold uppercase tracking-tight leading-[0.98] text-transparent bg-clip-text bg-gradient-to-r from-[#FF293F] via-[#D10E24] to-[#8C0A19]">
+                <h1 className="font-heading text-4xl sm:text-5xl xl:text-6xl font-extrabold uppercase tracking-tight leading-[0.98] text-transparent bg-clip-text bg-gradient-to-r from-[#FF293F] via-[#D10E24] to-[#8C0A19]">
                   THREAT.
                 </h1>
               </div>
@@ -439,33 +439,33 @@ export const LandingPage: React.FC = () => {
             {/* Supporting Text */}
             <p
               ref={descRef}
-              className="font-sans text-base sm:text-lg text-[#99999F] max-w-xl font-normal leading-relaxed"
+              className="font-sans text-sm sm:text-base text-[#99999F] max-w-md font-normal leading-relaxed"
             >
               Neural threat detection, attack-path intelligence and autonomous defense simulation within one integrated cyber intelligence platform.
             </p>
 
             {/* Buttons (EXPLORE ØMEN & LAUNCH CONSOLE) */}
-            <div ref={ctaRef} className="flex flex-wrap items-center gap-4 pt-2">
+            <div ref={ctaRef} className="flex flex-wrap items-center gap-4 pt-1">
               <button
                 onClick={() => document.getElementById('architecture')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-8 py-3.5 rounded-full bg-[#F5F5F5] hover:bg-white text-[#050505] font-technical text-xs font-bold tracking-wider transition-all duration-300 shadow-[0_4px_24px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
+                className="px-7 py-3 rounded-full bg-[#F5F5F5] hover:bg-white text-[#050505] font-technical text-xs font-bold tracking-wider transition-all duration-300 shadow-[0_4px_24px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
               >
                 EXPLORE ØMEN
               </button>
 
               <button
                 onClick={() => navigate('/console')}
-                className="px-8 py-3.5 rounded-full bg-[#161619] hover:bg-[#D10E24] text-[#F5F5F5] hover:text-white border border-[#DCDCE0]/20 hover:border-[#FF293F] font-technical text-xs font-bold tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-[0_0_30px_rgba(255,41,63,0.4)] flex items-center gap-2 group hover:scale-105 active:scale-95"
+                className="px-7 py-3 rounded-full bg-[#161619] hover:bg-[#D10E24] text-[#F5F5F5] hover:text-white border border-[#DCDCE0]/20 hover:border-[#FF293F] font-technical text-xs font-bold tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-[0_0_30px_rgba(255,41,63,0.4)] flex items-center gap-2 group hover:scale-105 active:scale-95"
               >
                 <span>LAUNCH CONSOLE</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
 
             {/* Fine Technical Annotations */}
             <div
               ref={annotationsRef}
-              className="pt-6 border-t border-[#DCDCE0]/10 flex flex-wrap items-center gap-6 font-technical text-xs text-[#99999F]"
+              className="pt-5 border-t border-[#DCDCE0]/10 flex flex-wrap items-center gap-5 font-technical text-xs text-[#99999F]"
             >
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#FF293F]" />
@@ -482,21 +482,25 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Hero Visual: 3D Translucent Crimson Jellyfish Entity + Asymmetrical Floating Metric Cards */}
-          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[580px] lg:min-h-[700px]">
-            {/* The Cinematic Crimson Jellyfish Entity (Section 2) */}
-            <div ref={jellyfishContainerRef} className="w-full h-full relative z-10 flex items-center justify-center">
-              <OmenJellyfishEntity className="w-full h-[620px] lg:h-[720px]" />
+          {/* Center Column (Cols 6–8): Unclipped 3D Neural Jellyfish Entity */}
+          <div className="lg:col-span-4 relative flex items-center justify-center min-h-[460px] sm:min-h-[540px] lg:min-h-[700px] z-10 pointer-events-none overflow-visible">
+            <div ref={jellyfishContainerRef} className="w-full h-full relative flex items-center justify-center overflow-visible">
+              <OmenJellyfishEntity className="w-full h-[520px] sm:h-[620px] lg:h-[720px]" />
             </div>
+          </div>
 
-            {/* SECTION 4 — FLOATING METRIC CARDS (Asymmetrical surrounding cards with real data) */}
-            <div ref={floatingCardsRef} className="absolute inset-0 pointer-events-none z-20">
-              {/* Card 1: Top-Right (Threats Detected) */}
+          {/* Right Column (Cols 9–12): Asymmetrical System Metric Cards */}
+          <div className="lg:col-span-3 z-30 pointer-events-auto">
+            <div
+              ref={floatingCardsRef}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3.5"
+            >
+              {/* Card 1: Threats Detected */}
               <motion.div
-                whileHover={{ scale: 1.04 }}
-                className="absolute top-2 right-0 sm:right-4 pointer-events-auto p-4 rounded-2xl bg-[#161619]/80 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_12px_32px_rgba(0,0,0,0.7)] w-52 transition-all duration-300 hover:border-[#FF293F]/50 group"
+                whileHover={{ scale: 1.03 }}
+                className="p-4 rounded-2xl bg-[#161619]/85 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-[#FF293F]/50 group lg:translate-x-1"
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <span className="font-technical text-[10px] uppercase tracking-wider text-[#99999F]">
                     Threats Detected
                   </span>
@@ -505,17 +509,17 @@ export const LandingPage: React.FC = () => {
                 <div className="font-heading text-2xl font-bold text-[#F5F5F5] group-hover:text-[#FF293F] transition-colors">
                   {metrics.threatsDetected}
                 </div>
-                <p className="font-technical text-[9px] text-[#99999F] mt-1">
+                <p className="font-technical text-[9px] text-[#99999F] mt-0.5">
                   ML Multi-Model Telemetry
                 </p>
               </motion.div>
 
-              {/* Card 2: Upper-Right (Model Readiness) */}
+              {/* Card 2: Model Readiness */}
               <motion.div
-                whileHover={{ scale: 1.04 }}
-                className="absolute top-28 -right-2 sm:right-0 pointer-events-auto p-4 rounded-2xl bg-[#161619]/80 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_12px_32px_rgba(0,0,0,0.7)] w-56 transition-all duration-300 hover:border-[#D10E24]/50 group"
+                whileHover={{ scale: 1.03 }}
+                className="p-4 rounded-2xl bg-[#161619]/85 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-[#D10E24]/50 group lg:translate-x-3"
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <span className="font-technical text-[10px] uppercase tracking-wider text-[#99999F]">
                     Model Readiness
                   </span>
@@ -523,20 +527,20 @@ export const LandingPage: React.FC = () => {
                     RF+MLP+ISO
                   </span>
                 </div>
-                <div className="font-heading text-xl font-bold text-[#F5F5F5] group-hover:text-[#F5F5F5] transition-colors">
+                <div className="font-heading text-xl font-bold text-[#F5F5F5]">
                   {metrics.modelReadiness}
                 </div>
-                <p className="font-technical text-[9px] text-[#99999F] mt-1">
+                <p className="font-technical text-[9px] text-[#99999F] mt-0.5">
                   98.24% Neural Recall Holdout
                 </p>
               </motion.div>
 
-              {/* Card 3: Mid-Right (Attack Paths Identified) */}
+              {/* Card 3: Attack Paths Identified */}
               <motion.div
-                whileHover={{ scale: 1.04 }}
-                className="absolute top-56 right-2 sm:right-6 pointer-events-auto p-4 rounded-2xl bg-[#161619]/80 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_12px_32px_rgba(0,0,0,0.7)] w-52 transition-all duration-300 hover:border-[#FF293F]/50 group"
+                whileHover={{ scale: 1.03 }}
+                className="p-4 rounded-2xl bg-[#161619]/85 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-[#FF293F]/50 group lg:translate-x-0"
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <span className="font-technical text-[10px] uppercase tracking-wider text-[#99999F]">
                     Attack Paths
                   </span>
@@ -545,17 +549,17 @@ export const LandingPage: React.FC = () => {
                 <div className="font-heading text-xl font-bold text-[#F5F5F5] group-hover:text-[#FF293F] transition-colors">
                   {metrics.attackPaths}
                 </div>
-                <p className="font-technical text-[9px] text-[#99999F] mt-1">
+                <p className="font-technical text-[9px] text-[#99999F] mt-0.5">
                   Lateral Movement Corridors
                 </p>
               </motion.div>
 
-              {/* Card 4: Bottom-Left (Network Assets) */}
+              {/* Card 4: Network Assets */}
               <motion.div
-                whileHover={{ scale: 1.04 }}
-                className="absolute bottom-16 left-0 sm:left-4 pointer-events-auto p-4 rounded-2xl bg-[#161619]/80 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_12px_32px_rgba(0,0,0,0.7)] w-52 transition-all duration-300 hover:border-[#D10E24]/50 group"
+                whileHover={{ scale: 1.03 }}
+                className="p-4 rounded-2xl bg-[#161619]/85 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-[#D10E24]/50 group lg:translate-x-2"
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <span className="font-technical text-[10px] uppercase tracking-wider text-[#99999F]">
                     Network Assets
                   </span>
@@ -564,17 +568,17 @@ export const LandingPage: React.FC = () => {
                 <div className="font-heading text-xl font-bold text-[#F5F5F5]">
                   {metrics.networkAssets}
                 </div>
-                <p className="font-technical text-[9px] text-[#99999F] mt-1">
+                <p className="font-technical text-[9px] text-[#99999F] mt-0.5">
                   Zero-Trust Monitored Nodes
                 </p>
               </motion.div>
 
-              {/* Card 5: Bottom-Center (Incident Records) */}
+              {/* Card 5: Incident Records */}
               <motion.div
-                whileHover={{ scale: 1.04 }}
-                className="absolute -bottom-4 right-8 sm:right-24 pointer-events-auto p-4 rounded-2xl bg-[#161619]/85 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_12px_32px_rgba(0,0,0,0.7)] w-56 transition-all duration-300 hover:border-[#FF293F]/50 group"
+                whileHover={{ scale: 1.03 }}
+                className="p-4 rounded-2xl bg-[#161619]/85 backdrop-blur-xl border border-[#DCDCE0]/12 shadow-[0_8px_30px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-[#FF293F]/50 group lg:translate-x-4 sm:col-span-2 lg:col-span-1"
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <span className="font-technical text-[10px] uppercase tracking-wider text-[#99999F]">
                     Incident Records
                   </span>
@@ -583,11 +587,31 @@ export const LandingPage: React.FC = () => {
                 <div className="font-heading text-xl font-bold text-[#F5F5F5]">
                   {metrics.incidentRecords}
                 </div>
-                <p className="font-technical text-[9px] text-[#99999F] mt-1">
+                <p className="font-technical text-[9px] text-[#99999F] mt-0.5">
                   SQLite Evidence Memory
                 </p>
               </motion.div>
             </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar: Secondary Telemetry & Scroll Prompt */}
+        <div className="w-full pt-6 border-t border-[#DCDCE0]/10 flex flex-col sm:flex-row items-center justify-between gap-4 font-technical text-xs text-[#99999F] z-20">
+          <div className="flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
+            <span className="text-[#DCDCE0] font-semibold">POSTURE: DEFCON 3 ELEVATED</span>
+            <span className="text-[#99999F]">•</span>
+            <span>LATENCY: 24MS</span>
+            <span className="text-[#99999F]">•</span>
+            <span className="text-[#22C55E]">CORE ENGINES OPERATIONAL</span>
+          </div>
+
+          <div
+            onClick={() => document.getElementById('architecture')?.scrollIntoView({ behavior: 'smooth' })}
+            className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors group"
+          >
+            <span className="tracking-wider uppercase text-[11px]">SCROLL TO EXPLORE ARCHITECTURE</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-y-0.5 rotate-90 transition-transform" />
           </div>
         </div>
       </section>
