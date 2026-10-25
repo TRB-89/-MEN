@@ -426,6 +426,25 @@ class DefenseApprovalRecord(Base):
         }
 
 
+class IncidentNote(Base):
+    __tablename__ = "incident_notes"
+
+    id = Column(String(50), primary_key=True, index=True)
+    incident_id = Column(String(50), nullable=False, index=True)
+    author = Column(String(50), nullable=False, default="SecOps Analyst")
+    note = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "incident_id": self.incident_id,
+            "author": self.author,
+            "note": self.note,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:

@@ -185,3 +185,39 @@ def test_incidents_crud():
     patch_res = client.patch(f"/api/v1/incidents/{created_id}", json={"status": "CONTAINED"})
     assert patch_res.status_code == 200
     assert patch_res.json()["status"] == "CONTAINED"
+
+    # Module 5: Add analyst note
+    note_payload = {
+        "author": "Ghost_SecOps",
+        "note": "Workstation isolated from core network; investigating lateral movement indicators."
+    }
+    note_res = client.post(f"/api/v1/incidents/{created_id}/notes", json=note_payload)
+    assert note_res.status_code == 201
+    assert note_res.json()["author"] == "Ghost_SecOps"
+    assert "Workstation isolated" in note_res.json()["note"]
+
+    # Module 5: List notes
+    notes_list_res = client.get(f"/api/v1/incidents/{created_id}/notes")
+    assert notes_list_res.status_code == 200
+    assert notes_list_res.json()["count"] >= 1
+
+    # Module 5: Get incident relationships
+    rel_res = client.get(f"/api/v1/incidents/{created_id}/relationships")
+    assert rel_res.status_code == 200
+    assert "relationships" in rel_res.json()
+
+    # Module 5: Get incident report
+    rep_res = client.get(f"/api/v1/incidents/{created_id}/report")
+    assert rep_res.status_code == 200
+    assert rep_res.json()["dossier_id"] == f"DOSSIER-{created_id}"
+    assert "mitre_alignment" in rep_res.json()
+
+    # Module 5: Export full JSON forensic dossier
+    exp_res = client.get("/api/v1/incidents/export/json")
+    assert exp_res.status_code == 200
+    assert "export_metadata" in exp_res.json()
+
+    # Module 5: Replay timeline
+    replay_res = client.get("/api/v1/incidents/timeline/replay")
+    assert replay_res.status_code == 200
+    assert "timeline" in replay_res.json()

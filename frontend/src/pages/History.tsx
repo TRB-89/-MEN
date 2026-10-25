@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { 
   Database, 
   RefreshCw, 
@@ -17,6 +18,7 @@ import { OmenSectionHeader } from '../components/ui/OmenSectionHeader';
 import { OmenButton } from '../components/ui/OmenButton';
 
 export const History: React.FC = () => {
+  const { incidentId } = useParams<{ incidentId?: string }>();
   const [incidents, setIncidents] = useState<IncidentRecord[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<TimelineReplayItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -33,13 +35,17 @@ export const History: React.FC = () => {
     try {
       const [incRes, timelineRes] = await Promise.allSettled([
         api.getIncidents(undefined, undefined, 50, 0),
-        api.getAttackReplayTimeline(),
+        api.getAttackReplayTimeline(incidentId),
       ]);
 
       if (incRes.status === 'fulfilled' && incRes.value && incRes.value.incidents) {
-        setIncidents(incRes.value.incidents);
-        if (incRes.value.incidents.length > 0 && !selectedIncident) {
-          setSelectedIncident(incRes.value.incidents[0]);
+        const loaded = incRes.value.incidents;
+        setIncidents(loaded);
+        if (incidentId) {
+          const match = loaded.find((i) => i.id.toLowerCase() === incidentId.toLowerCase());
+          if (match) setSelectedIncident(match);
+        } else if (loaded.length > 0 && !selectedIncident) {
+          setSelectedIncident(loaded[0]);
         }
       } else {
         setIncidents([]);

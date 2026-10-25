@@ -38,6 +38,7 @@ export const App: React.FC = () => {
             <Route path="/prediction" element={<Prediction />} />
             <Route path="/defense" element={<Defense />} />
             <Route path="/incidents" element={<History />} />
+            <Route path="/incidents/:incidentId" element={<History />} />
             <Route path="/history" element={<History />} />
             <Route path="/settings" element={<System />} />
             <Route path="/system" element={<System />} />

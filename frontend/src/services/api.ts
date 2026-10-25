@@ -484,6 +484,39 @@ export class ApiService {
     return this.request(query, { timeoutMs });
   }
 
+  async getIncidentById(incidentId: string, timeoutMs: number = 20000): Promise<IncidentRecord> {
+    return this.request<IncidentRecord>(`/api/v1/incidents/${encodeURIComponent(incidentId)}`, { timeoutMs });
+  }
+
+  async getIncidentTimeline(incidentId: string, timeoutMs: number = 20000): Promise<{ incident_id: string; count: number; timeline: any[] }> {
+    return this.request(`/api/v1/incidents/${encodeURIComponent(incidentId)}/timeline`, { timeoutMs });
+  }
+
+  async getIncidentRelationships(incidentId: string, timeoutMs: number = 20000): Promise<{ incident_id: string; count: number; relationships: any[] }> {
+    return this.request(`/api/v1/incidents/${encodeURIComponent(incidentId)}/relationships`, { timeoutMs });
+  }
+
+  async getIncidentReport(incidentId: string, timeoutMs: number = 20000): Promise<any> {
+    return this.request(`/api/v1/incidents/${encodeURIComponent(incidentId)}/report`, { timeoutMs });
+  }
+
+  async addIncidentNote(incidentId: string, payload: { author?: string; note: string }, timeoutMs: number = 20000): Promise<any> {
+    return this.request(`/api/v1/incidents/${encodeURIComponent(incidentId)}/notes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      timeoutMs,
+    });
+  }
+
+  async getIncidentNotes(incidentId: string, timeoutMs: number = 20000): Promise<{ incident_id: string; count: number; notes: any[] }> {
+    return this.request(`/api/v1/incidents/${encodeURIComponent(incidentId)}/notes`, { timeoutMs });
+  }
+
+  async exportIncidentsJson(timeoutMs: number = 20000): Promise<any> {
+    return this.request('/api/v1/incidents/export/json', { timeoutMs });
+  }
+
   async getAttackReplayTimeline(incidentId?: string, timeoutMs: number = 20000): Promise<{ count: number; timeline: any[] }> {
     let query = '/api/v1/incidents/timeline/replay';
     if (incidentId) query += `?incident_id=${encodeURIComponent(incidentId)}`;
