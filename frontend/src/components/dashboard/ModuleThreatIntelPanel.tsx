@@ -4,28 +4,30 @@ import {
   Search, 
   ExternalLink, 
   RefreshCw, 
-  Database, 
   CheckCircle2, 
   AlertTriangle, 
-  Filter, 
   Layers, 
-  ShieldCheck,
-  Server,
-  Terminal,
-  Clock,
-  Sparkles
+  Server, 
+  Sparkles,
+  Bot,
+  Zap,
+  TrendingUp,
+  FileCode,
+  Lock
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { 
   ThreatIntelSummary, 
   MitreTechnique, 
   CisaKevVulnerability, 
-  AssetVulnEnrichment 
+  AssetVulnEnrichment,
+  IncidentExplanationResponse
 } from '../../types';
 
 export const ModuleThreatIntelPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'mitre' | 'cisa' | 'assets'>('mitre');
+  const [activeTab, setActiveTab] = useState<'mitre' | 'vulnerabilities' | 'assets' | 'ai'>('mitre');
   const [summary, setSummary] = useState<ThreatIntelSummary | null>(null);
+  const [intelStatus, setIntelStatus] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
@@ -38,13 +40,13 @@ export const ModuleThreatIntelPanel: React.FC = () => {
   const [isMitreLoading, setIsMitreLoading] = useState<boolean>(false);
   const [expandedTechniqueId, setExpandedTechniqueId] = useState<string | null>(null);
 
-  // CISA KEV state
-  const [cisaQuery, setCisaQuery] = useState<string>('');
+  // Vulnerabilities & KEV state
+  const [vulnQuery, setVulnQuery] = useState<string>('');
   const [selectedVendor, setSelectedVendor] = useState<string>('');
   const [ransomwareOnly, setRansomwareOnly] = useState<boolean>(false);
-  const [cisaResults, setCisaResults] = useState<CisaKevVulnerability[]>([]);
-  const [cisaTotal, setCisaTotal] = useState<number>(0);
-  const [isCisaLoading, setIsCisaLoading] = useState<boolean>(false);
+  const [vulnResults, setVulnResults] = useState<CisaKevVulnerability[]>([]);
+  const [vulnTotal, setVulnTotal] = useState<number>(0);
+  const [isVulnLoading, setIsVulnLoading] = useState<boolean>(false);
   const [expandedCveId, setExpandedCveId] = useState<string | null>(null);
 
   // Asset Correlation state
@@ -52,11 +54,17 @@ export const ModuleThreatIntelPanel: React.FC = () => {
   const [assetEnrichment, setAssetEnrichment] = useState<AssetVulnEnrichment | null>(null);
   const [isAssetLoading, setIsAssetLoading] = useState<boolean>(false);
 
-  // Initial summary load
+  // Local AI / Ollama Assistant state
+  const [aiExplanation, setAiExplanation] = useState<IncidentExplanationResponse | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
+  const [aiCategory, setAiCategory] = useState<string>('Exploitation');
+  const [aiAsset, setAiAsset] = useState<string>('srv-web-01');
+
+  // Initial data load
   useEffect(() => {
     loadSummary();
     executeMitreSearch('', '');
-    executeCisaSearch('', '', false);
+    executeVulnSearch('', '', false);
     loadAssetVulnerabilities('gw-ext-01');
   }, []);
 
@@ -64,8 +72,12 @@ export const ModuleThreatIntelPanel: React.FC = () => {
     if (typeof api.getThreatIntelSummary !== 'function') return;
     setIsLoading(true);
     try {
-      const data = await api.getThreatIntelSummary();
-      setSummary(data);
+      const [sumRes, statRes] = await Promise.allSettled([
+        api.getThreatIntelSummary(),
+        typeof api.getIntelligenceStatus === 'function' ? api.getIntelligenceStatus() : Promise.resolve(null),
+      ]);
+      if (sumRes.status === 'fulfilled') setSummary(sumRes.value);
+      if (statRes.status === 'fulfilled' && statRes.value) setIntelStatus(statRes.value);
     } catch (err) {
       console.error('Failed to load threat intel summary:', err);
     } finally {
@@ -78,12 +90,12 @@ export const ModuleThreatIntelPanel: React.FC = () => {
     setIsSyncing(true);
     setSyncMessage(null);
     try {
-      const res = await api.syncThreatIntel(true);
+      await api.syncThreatIntel(true);
       setSyncMessage('Threat Intelligence background sync triggered.');
       setTimeout(() => {
         loadSummary();
         executeMitreSearch(mitreQuery, selectedTactic);
-        executeCisaSearch(cisaQuery, selectedVendor, ransomwareOnly);
+        executeVulnSearch(vulnQuery, selectedVendor, ransomwareOnly);
       }, 2000);
     } catch (err: any) {
       setSyncMessage(`Sync failed: ${err.message || 'Offline'}`);
@@ -110,9 +122,9 @@ export const ModuleThreatIntelPanel: React.FC = () => {
     }
   };
 
-  const executeCisaSearch = async (q: string, vendor: string, rwOnly: boolean) => {
+  const executeVulnSearch = async (q: string, vendor: string, rwOnly: boolean) => {
     if (typeof api.searchCisaKev !== 'function') return;
-    setIsCisaLoading(true);
+    setIsVulnLoading(true);
     try {
       const data = await api.searchCisaKev({
         q: q || undefined,
@@ -120,12 +132,12 @@ export const ModuleThreatIntelPanel: React.FC = () => {
         ransomware_only: rwOnly,
         limit: 30,
       });
-      setCisaResults(data.results || []);
-      setCisaTotal(data.total || 0);
+      setVulnResults(data.results || []);
+      setVulnTotal(data.total || 0);
     } catch (err) {
-      console.error('Failed to search CISA KEV:', err);
+      console.error('Failed to search CISA KEV & NVD:', err);
     } finally {
-      setIsCisaLoading(false);
+      setIsVulnLoading(false);
     }
   };
 
@@ -140,6 +152,26 @@ export const ModuleThreatIntelPanel: React.FC = () => {
       setAssetEnrichment(null);
     } finally {
       setIsAssetLoading(false);
+    }
+  };
+
+  const handleGenerateAiExplanation = async () => {
+    if (typeof api.explainIncident !== 'function') return;
+    setIsAiLoading(true);
+    try {
+      const res = await api.explainIncident({
+        threat_category: aiCategory,
+        affected_asset: aiAsset,
+        target_crown_jewel: 'db-prod-01',
+        technique_ids: ['T1190', 'T1021.004'],
+        cve_ids: ['CVE-2023-3519'],
+        recommended_action: 'ISOLATE_WORKSTATION',
+      });
+      setAiExplanation(res);
+    } catch (err) {
+      console.error('AI explanation failed:', err);
+    } finally {
+      setIsAiLoading(false);
     }
   };
 
@@ -167,6 +199,9 @@ export const ModuleThreatIntelPanel: React.FC = () => {
     { id: 'db-prod-01', name: 'Production SQL Crown Jewel' },
   ];
 
+  const epssCount = intelStatus?.summary_counts?.epss_scores || 395308;
+  const rwCount = intelStatus?.summary_counts?.known_ransomware_associated || summary?.cisa_kev?.known_ransomware_associated || 361;
+
   return (
     <div className="w-full bg-[#0a0a0c] border border-[#1f2227] rounded-xl overflow-hidden shadow-2xl">
       {/* Top OS Header */}
@@ -182,7 +217,7 @@ export const ModuleThreatIntelPanel: React.FC = () => {
             </span>
           </div>
           <p className="text-xs font-mono text-gray-400 mt-1">
-            OFFICIAL MITRE ATT&CK® STIX & CISA KNOWN EXPLOITED VULNERABILITIES (KEV) REPOSITORIES
+            MITRE ATT&CK® STIX • CISA KEV CATALOG • FIRST EPSS PROBABILITIES • NVD CVSS METRICS
           </p>
         </div>
 
@@ -190,7 +225,7 @@ export const ModuleThreatIntelPanel: React.FC = () => {
         <div className="flex items-center gap-3">
           {summary?.last_synced_utc && (
             <div className="text-right hidden sm:block">
-              <span className="text-[10px] font-mono text-gray-500 block uppercase">Catalog Refreshed</span>
+              <span className="text-[10px] font-mono text-gray-500 block uppercase">Intelligence Freshness</span>
               <span className="text-xs font-mono text-gray-300">
                 {new Date(summary.last_synced_utc).toLocaleDateString()}
               </span>
@@ -202,7 +237,7 @@ export const ModuleThreatIntelPanel: React.FC = () => {
             className="flex items-center gap-2 px-3 py-1.5 text-xs font-mono uppercase tracking-wider bg-[#14151a] hover:bg-[#1a1c24] border border-[#262a33] text-gray-200 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-[#F02D46] ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'Syncing...' : 'Sync Datasets'}
+            {isSyncing ? 'Syncing...' : 'Sync Feeds'}
           </button>
         </div>
       </div>
@@ -214,39 +249,47 @@ export const ModuleThreatIntelPanel: React.FC = () => {
         </div>
       )}
 
-      {/* Summary KPI Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#1f2227] border-b border-[#1f2227]">
+      {/* 5-Column Summary KPI Strip */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-[#1f2227] border-b border-[#1f2227]">
         <div className="p-4 bg-[#0d0e12]">
           <div className="text-[10px] font-mono uppercase text-gray-500 tracking-wider">MITRE Techniques</div>
-          <div className="text-2xl font-mono font-bold text-white mt-1">
+          <div className="text-xl font-mono font-bold text-white mt-1">
             {summary?.mitre_attack?.total_techniques || 706}
           </div>
-          <div className="text-[10px] font-mono text-gray-400 mt-0.5">Enterprise Matrix (STIX 2.1)</div>
+          <div className="text-[10px] font-mono text-gray-400 mt-0.5">Enterprise STIX 2.1</div>
         </div>
 
         <div className="p-4 bg-[#0d0e12]">
           <div className="text-[10px] font-mono uppercase text-gray-500 tracking-wider">CISA KEV Catalog</div>
-          <div className="text-2xl font-mono font-bold text-white mt-1">
+          <div className="text-xl font-mono font-bold text-white mt-1">
             {summary?.cisa_kev?.total_vulnerabilities || 1756}
           </div>
-          <div className="text-[10px] font-mono text-gray-400 mt-0.5">Known Exploited CVEs</div>
+          <div className="text-[10px] font-mono text-gray-400 mt-0.5">Known Exploited in Wild</div>
+        </div>
+
+        <div className="p-4 bg-[#0d0e12]">
+          <div className="text-[10px] font-mono uppercase text-gray-500 tracking-wider">FIRST EPSS Scores</div>
+          <div className="text-xl font-mono font-bold text-emerald-400 mt-1">
+            {Number(epssCount).toLocaleString()}
+          </div>
+          <div className="text-[10px] font-mono text-gray-400 mt-0.5">30-Day Probability Engine</div>
         </div>
 
         <div className="p-4 bg-[#0d0e12]">
           <div className="text-[10px] font-mono uppercase text-gray-500 tracking-wider">Ransomware Exploited</div>
-          <div className="text-2xl font-mono font-bold text-[#F02D46] mt-1">
-            {summary?.cisa_kev?.known_ransomware_associated || 342}
+          <div className="text-xl font-mono font-bold text-[#F02D46] mt-1">
+            {rwCount}
           </div>
-          <div className="text-[10px] font-mono text-gray-400 mt-0.5">Active Threat Actor Campaigns</div>
+          <div className="text-[10px] font-mono text-gray-400 mt-0.5">Active Threat Campaigns</div>
         </div>
 
-        <div className="p-4 bg-[#0d0e12]">
+        <div className="p-4 bg-[#0d0e12] col-span-2 md:col-span-1">
           <div className="text-[10px] font-mono uppercase text-gray-500 tracking-wider">Licensing & Terms</div>
-          <div className="text-xs font-mono text-gray-300 mt-2 flex items-center gap-1.5">
+          <div className="text-xs font-mono text-gray-300 mt-1.5 flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Apache 2.0 / CC0 Public</span>
+            <span>Apache 2.0 / CC0</span>
           </div>
-          <div className="text-[10px] font-mono text-gray-500 mt-0.5">Defensive Use Authorized</div>
+          <div className="text-[10px] font-mono text-gray-500 mt-0.5">100% Offline Ready</div>
         </div>
       </div>
 
@@ -265,15 +308,15 @@ export const ModuleThreatIntelPanel: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('cisa')}
+          onClick={() => setActiveTab('vulnerabilities')}
           className={`py-3 px-4 text-xs font-mono uppercase tracking-wider border-b-2 flex items-center gap-2 transition-all ${
-            activeTab === 'cisa'
+            activeTab === 'vulnerabilities'
               ? 'border-[#F02D46] text-white font-bold bg-[#14151b]'
               : 'border-transparent text-gray-400 hover:text-gray-200'
           }`}
         >
           <ShieldAlert className="w-3.5 h-3.5 text-[#F02D46]" />
-          CISA KEV Exploited CVEs ({cisaTotal})
+          Vulnerabilities (KEV & EPSS) ({vulnTotal})
         </button>
 
         <button
@@ -287,12 +330,26 @@ export const ModuleThreatIntelPanel: React.FC = () => {
           <Server className="w-3.5 h-3.5 text-[#F02D46]" />
           Asset CVE Correlation
         </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('ai');
+            if (!aiExplanation) handleGenerateAiExplanation();
+          }}
+          className={`py-3 px-4 text-xs font-mono uppercase tracking-wider border-b-2 flex items-center gap-2 transition-all ${
+            activeTab === 'ai'
+              ? 'border-[#F02D46] text-white font-bold bg-[#14151b]'
+              : 'border-transparent text-gray-400 hover:text-gray-200'
+          }`}
+        >
+          <Bot className="w-3.5 h-3.5 text-[#F02D46]" />
+          AI Incident Briefing (Ollama)
+        </button>
       </div>
 
       {/* Tab 1: MITRE ATT&CK Explorer */}
       {activeTab === 'mitre' && (
         <div className="p-6 space-y-5">
-          {/* Search and Filters */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -326,7 +383,6 @@ export const ModuleThreatIntelPanel: React.FC = () => {
             </div>
           </div>
 
-          {/* Results List */}
           {isMitreLoading ? (
             <div className="py-12 text-center text-xs font-mono text-gray-500 flex items-center justify-center gap-2">
               <RefreshCw className="w-4 h-4 animate-spin text-[#F02D46]" />
@@ -359,7 +415,6 @@ export const ModuleThreatIntelPanel: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Tactics & Platforms */}
                         <div className="flex flex-wrap items-center gap-2 pt-1">
                           {tech.tactics.map((tac) => (
                             <span
@@ -420,20 +475,19 @@ export const ModuleThreatIntelPanel: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 2: CISA KEV Explorer */}
-      {activeTab === 'cisa' && (
+      {/* Tab 2: Unified Vulnerabilities (CISA KEV + EPSS + NVD) */}
+      {activeTab === 'vulnerabilities' && (
         <div className="p-6 space-y-5">
-          {/* Search and Filters */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search CVE ID (e.g. CVE-2023-3519) or keyword..."
-                value={cisaQuery}
+                placeholder="Search CVE ID (e.g. CVE-2023-3519) or product/keyword..."
+                value={vulnQuery}
                 onChange={(e) => {
-                  setCisaQuery(e.target.value);
-                  executeCisaSearch(e.target.value, selectedVendor, ransomwareOnly);
+                  setVulnQuery(e.target.value);
+                  executeVulnSearch(e.target.value, selectedVendor, ransomwareOnly);
                 }}
                 className="w-full bg-[#111317] border border-[#232730] pl-10 pr-4 py-2 text-xs font-mono text-white placeholder-gray-500 focus:outline-none focus:border-[#F02D46]"
               />
@@ -444,7 +498,7 @@ export const ModuleThreatIntelPanel: React.FC = () => {
                 value={selectedVendor}
                 onChange={(e) => {
                   setSelectedVendor(e.target.value);
-                  executeCisaSearch(cisaQuery, e.target.value, ransomwareOnly);
+                  executeVulnSearch(vulnQuery, e.target.value, ransomwareOnly);
                 }}
                 className="w-full bg-[#111317] border border-[#232730] px-3 py-2 text-xs font-mono text-gray-200 focus:outline-none focus:border-[#F02D46]"
               >
@@ -461,7 +515,7 @@ export const ModuleThreatIntelPanel: React.FC = () => {
               onClick={() => {
                 const toggled = !ransomwareOnly;
                 setRansomwareOnly(toggled);
-                executeCisaSearch(cisaQuery, selectedVendor, toggled);
+                executeVulnSearch(vulnQuery, selectedVendor, toggled);
               }}
               className={`px-3 py-2 text-xs font-mono uppercase tracking-wider border flex items-center gap-2 transition-colors ${
                 ransomwareOnly
@@ -474,19 +528,18 @@ export const ModuleThreatIntelPanel: React.FC = () => {
             </button>
           </div>
 
-          {/* Results List */}
-          {isCisaLoading ? (
+          {isVulnLoading ? (
             <div className="py-12 text-center text-xs font-mono text-gray-500 flex items-center justify-center gap-2">
               <RefreshCw className="w-4 h-4 animate-spin text-[#F02D46]" />
-              Querying CISA Known Exploited Vulnerabilities catalog...
+              Querying CISA KEV & NVD vulnerability database...
             </div>
-          ) : cisaResults.length === 0 ? (
+          ) : vulnResults.length === 0 ? (
             <div className="p-8 text-center border border-dashed border-[#232730] text-xs font-mono text-gray-500">
-              No vulnerabilities matched the query "{cisaQuery}".
+              No vulnerabilities matched the query "{vulnQuery}".
             </div>
           ) : (
             <div className="space-y-3">
-              {cisaResults.map((v) => {
+              {vulnResults.map((v) => {
                 const isExpanded = expandedCveId === v.cveID;
                 const isRansomware = (v.knownRansomwareCampaignUse || '').toLowerCase() === 'known';
                 return (
@@ -496,23 +549,28 @@ export const ModuleThreatIntelPanel: React.FC = () => {
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2 py-0.5 text-xs font-mono font-bold text-white bg-[#14161d] border border-[#2b303c]">
                             {v.cveID}
                           </span>
                           <span className="text-xs font-mono font-bold text-[#F02D46]">
                             {v.vendorProject} — {v.product}
                           </span>
+                          {/* KEV Flag */}
+                          <span className="px-1.5 py-0.5 text-[9px] font-mono uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            CISA KEV
+                          </span>
+                          {/* Ransomware Flag */}
                           {isRansomware && (
-                            <span className="px-1.5 py-0.2 text-[9px] font-mono uppercase bg-[#F02D46]/20 text-[#F02D46] border border-[#F02D46]/40">
-                              Ransomware Associated
+                            <span className="px-1.5 py-0.5 text-[9px] font-mono uppercase bg-[#F02D46]/20 text-[#F02D46] border border-[#F02D46]/40">
+                              Ransomware
                             </span>
                           )}
                         </div>
                         <h4 className="text-xs font-sans text-gray-300 font-medium pt-0.5">
                           {v.vulnerabilityName}
                         </h4>
-                        <div className="flex items-center gap-4 text-[10px] font-mono text-gray-500">
+                        <div className="flex flex-wrap items-center gap-4 text-[10px] font-mono text-gray-500">
                           <span>Added to KEV: {v.dateAdded}</span>
                           {v.dueDate && <span>Mitigation Due: {v.dueDate}</span>}
                         </div>
@@ -570,7 +628,7 @@ export const ModuleThreatIntelPanel: React.FC = () => {
             <div>
               <span className="text-[10px] font-mono uppercase text-gray-500 block">Select Network Asset</span>
               <span className="text-xs font-mono text-gray-300">
-                Correlate asset vulnerability records strictly against CISA KEV evidence
+                Correlate asset vulnerability records strictly against CISA KEV and EPSS evidence
               </span>
             </div>
             <select
@@ -592,7 +650,7 @@ export const ModuleThreatIntelPanel: React.FC = () => {
           {isAssetLoading ? (
             <div className="py-12 text-center text-xs font-mono text-gray-500 flex items-center justify-center gap-2">
               <RefreshCw className="w-4 h-4 animate-spin text-[#F02D46]" />
-              Correlating asset vulnerabilities with CISA KEV...
+              Correlating asset vulnerabilities with CISA KEV and EPSS...
             </div>
           ) : !assetEnrichment ? (
             <div className="p-8 text-center text-xs font-mono text-gray-500">Asset not found.</div>
@@ -678,28 +736,123 @@ export const ModuleThreatIntelPanel: React.FC = () => {
         </div>
       )}
 
+      {/* Tab 4: Local AI Incident Briefing (Ollama Assistant) */}
+      {activeTab === 'ai' && (
+        <div className="p-6 space-y-6">
+          <div className="p-5 bg-[#0d0e12] border border-[#1f2227] rounded space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-[#F02D46]" />
+                  <h3 className="text-sm font-heading font-bold text-white tracking-wide">
+                    AUTONOMOUS INCIDENT EXPLANATION ASSISTANT
+                  </h3>
+                </div>
+                <p className="text-xs font-mono text-gray-400 mt-1">
+                  Synthesizes Neural Threat Detection, MITRE ATT&CK, CISA KEV, and zero-trust containment rationale.
+                </p>
+              </div>
+
+              <button
+                onClick={handleGenerateAiExplanation}
+                disabled={isAiLoading}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-mono uppercase tracking-wider bg-[#F02D46] hover:bg-[#d0243a] text-white font-bold transition-colors disabled:opacity-50"
+              >
+                <Zap className={`w-3.5 h-3.5 ${isAiLoading ? 'animate-spin' : ''}`} />
+                {isAiLoading ? 'Analyzing...' : 'Generate AI Briefing'}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div>
+                <label className="text-[10px] font-mono uppercase text-gray-500 block mb-1">Threat Category</label>
+                <select
+                  value={aiCategory}
+                  onChange={(e) => setAiCategory(e.target.value)}
+                  className="w-full bg-[#111317] border border-[#232730] px-3 py-2 text-xs font-mono text-white"
+                >
+                  <option value="Exploitation">Exploitation / Initial Foothold</option>
+                  <option value="Lateral Movement">Lateral Movement Pivot</option>
+                  <option value="Privilege Escalation">Domain Privilege Escalation</option>
+                  <option value="Credential Access">Credential Dumping / Kerberoasting</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono uppercase text-gray-500 block mb-1">Target Asset</label>
+                <select
+                  value={aiAsset}
+                  onChange={(e) => setAiAsset(e.target.value)}
+                  className="w-full bg-[#111317] border border-[#232730] px-3 py-2 text-xs font-mono text-white"
+                >
+                  <option value="srv-web-01">srv-web-01 (DMZ Public Portal)</option>
+                  <option value="gw-ext-01">gw-ext-01 (Citrix NetScaler Gateway)</option>
+                  <option value="ws-admin-01">ws-admin-01 (Tier-1 Admin Workstation)</option>
+                  <option value="dc-01">dc-01 (Domain Controller)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {aiExplanation && (
+            <div className="p-6 bg-[#0e1014] border border-[#282d37] space-y-4 rounded-lg">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1f2227] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                    {aiExplanation.generator === 'local_ollama' ? 'Local Ollama LLM Briefing' : 'Deterministic Technical Briefing'}
+                  </span>
+                  <span className="text-[10px] font-mono text-gray-400">[{aiExplanation.model}]</span>
+                </div>
+                <span className="text-[10px] font-mono text-gray-500">100% Private Local Inference</span>
+              </div>
+
+              <div className="space-y-3">
+                <div className="text-xs text-gray-200 font-sans leading-relaxed">
+                  <span className="font-mono text-[#F02D46] font-bold block mb-1">INCIDENT EXECUTIVE SUMMARY</span>
+                  {aiExplanation.summary}
+                </div>
+
+                <div className="p-3 bg-[#13151b] border border-[#20242e] text-xs font-mono text-gray-300">
+                  <span className="text-white font-bold block mb-1">TACTICAL MITRE ADVERSARY MAPPING</span>
+                  {aiExplanation.tactical_analysis}
+                </div>
+
+                <div className="p-3 bg-[#13151b] border border-[#20242e] text-xs font-mono text-gray-300">
+                  <span className="text-white font-bold block mb-1">VULNERABILITY & EXPLOITATION CONTEXT</span>
+                  {aiExplanation.vulnerability_context}
+                </div>
+
+                <div className="p-3 bg-[#13151b] border border-[#20242e] text-xs font-mono text-emerald-400">
+                  <span className="font-bold block mb-1 text-white">CONTAINMENT DECISION RATIONALE</span>
+                  {aiExplanation.containment_rationale}
+                </div>
+
+                <div className="text-[10px] font-mono text-gray-500 italic">
+                  {aiExplanation.disclaimer}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Attribution Footer */}
       <div className="p-4 bg-[#0a0a0d] border-t border-[#1f2227] flex flex-wrap items-center justify-between gap-3 text-[10px] font-mono text-gray-500">
         <div>
-          <span>Attribution: © 2025 MITRE Corporation (Apache 2.0) | CISA Known Exploited Vulnerabilities (CC0 1.0)</span>
+          <span>Attribution: © 2025 MITRE (Apache 2.0) • CISA KEV (CC0) • FIRST.Org EPSS • NIST NVD</span>
         </div>
         <div className="flex items-center gap-3">
-          <a
-            href="https://attack.mitre.org"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-[#F02D46] transition-colors"
-          >
+          <a href="https://attack.mitre.org" target="_blank" rel="noreferrer" className="hover:text-[#F02D46]">
             attack.mitre.org
           </a>
           <span>•</span>
-          <a
-            href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-[#F02D46] transition-colors"
-          >
+          <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noreferrer" className="hover:text-[#F02D46]">
             cisa.gov/kev
+          </a>
+          <span>•</span>
+          <a href="https://www.first.org/epss/" target="_blank" rel="noreferrer" className="hover:text-[#F02D46]">
+            first.org/epss
           </a>
         </div>
       </div>

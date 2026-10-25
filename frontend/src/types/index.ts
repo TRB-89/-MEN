@@ -716,3 +716,52 @@ export interface AssetVulnEnrichment {
   attribution_notice: string;
 }
 
+export interface EpssRecord {
+  cve_id: string;
+  epss_score: number;
+  percentile: number;
+  interpretation: string;
+  model_version?: string | null;
+  score_date?: string | null;
+}
+
+export interface UnifiedVulnerabilityRecord {
+  cve_id: string;
+  description: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'UNKNOWN';
+  cvss_v3_score?: number | null;
+  cvss_v3_vector?: string | null;
+  cvss_v2_score?: number | null;
+  affected_products: string[];
+  published_date?: string | null;
+  modified_date?: string | null;
+  references: string[];
+  in_cisa_kev: boolean;
+  cisa_action?: string | null;
+  cisa_due_date?: string | null;
+  known_ransomware: boolean;
+  epss?: EpssRecord | null;
+}
+
+export interface UnifiedVulnerabilityResponse {
+  total: number;
+  count: number;
+  limit: number;
+  offset: number;
+  query?: string | null;
+  severity?: string | null;
+  kev_only: boolean;
+  vulnerabilities: UnifiedVulnerabilityRecord[];
+}
+
+export interface IncidentExplanationResponse {
+  incident_id?: string | null;
+  generator: string;
+  model: string;
+  summary: string;
+  tactical_analysis: string;
+  vulnerability_context: string;
+  containment_rationale: string;
+  disclaimer: string;
+}
+

@@ -15,6 +15,7 @@ ENV/
 # Data and Models
 backend/data/*.csv
 backend/data/*.parquet
+backend/data/threat_intel/epss_scores.json
 *.joblib
 *.pt
 *.pth

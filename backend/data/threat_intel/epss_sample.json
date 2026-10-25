@@ -1,0 +1,49 @@
+{
+  "model_version": "v2026.06.15",
+  "score_date": "2026-10-25T12:03:13Z",
+  "count": 10,
+  "last_synced_utc": "2026-10-25T15:21:00.415873+00:00",
+  "source": "https://github.com/empiricalsec/epss_scores",
+  "scores": {
+    "CVE-2023-3519": {
+      "epss": 0.99749,
+      "percentile": 0.99954
+    },
+    "CVE-2023-46805": {
+      "epss": 0.99984,
+      "percentile": 0.99983
+    },
+    "CVE-2024-21887": {
+      "epss": 0.99999,
+      "percentile": 0.99999
+    },
+    "CVE-2023-27997": {
+      "epss": 0.85689,
+      "percentile": 0.99723
+    },
+    "CVE-2021-44228": {
+      "epss": 0.99999,
+      "percentile": 1.0
+    },
+    "CVE-2020-1472": {
+      "epss": 0.99389,
+      "percentile": 0.9994
+    },
+    "CVE-2017-0144": {
+      "epss": 0.9923,
+      "percentile": 0.99936
+    },
+    "CVE-2024-3400": {
+      "epss": 0.99999,
+      "percentile": 1.0
+    },
+    "CVE-2023-22515": {
+      "epss": 0.99223,
+      "percentile": 0.99935
+    },
+    "CVE-2023-38606": {
+      "epss": 0.02899,
+      "percentile": 0.86844
+    }
+  }
+}

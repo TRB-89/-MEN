@@ -625,8 +625,53 @@ export class ApiService {
   }
 
   async syncThreatIntel(force: boolean = true, timeoutMs: number = 15000): Promise<any> {
-    return this.request(`/api/v1/threat-intel/sync?force=${force}`, {
+    return this.request(`/api/v1/intelligence/sync?force=${force}`, {
       method: 'POST',
+      timeoutMs,
+    });
+  }
+
+  // --- Unified Threat Intelligence API (Part 9 Compliant) ---
+  async getIntelligenceStatus(timeoutMs: number = 15000): Promise<any> {
+    return this.request('/api/v1/intelligence/status', { timeoutMs });
+  }
+
+  async getUnifiedVulnerabilities(params: {
+    q?: string;
+    severity?: string;
+    kev_only?: boolean;
+    limit?: number;
+    offset?: number;
+  } = {}, timeoutMs: number = 15000): Promise<import('../types').UnifiedVulnerabilityResponse> {
+    const { q, severity, kev_only = false, limit = 50, offset = 0 } = params;
+    let query = `/api/v1/intelligence/vulnerabilities?limit=${limit}&offset=${offset}`;
+    if (q) query += `&q=${encodeURIComponent(q)}`;
+    if (severity) query += `&severity=${encodeURIComponent(severity)}`;
+    if (kev_only) query += `&kev_only=true`;
+    return this.request(query, { timeoutMs });
+  }
+
+  async getUnifiedVulnerability(cveId: string, timeoutMs: number = 10000): Promise<import('../types').UnifiedVulnerabilityRecord> {
+    return this.request(`/api/v1/intelligence/vulnerabilities/${encodeURIComponent(cveId)}`, { timeoutMs });
+  }
+
+  async getEpssScore(cveId: string, timeoutMs: number = 10000): Promise<import('../types').EpssRecord> {
+    return this.request(`/api/v1/intelligence/epss/${encodeURIComponent(cveId)}`, { timeoutMs });
+  }
+
+  async explainIncident(payload: {
+    incident_id?: string;
+    threat_category?: string;
+    affected_asset?: string;
+    target_crown_jewel?: string;
+    technique_ids?: string[];
+    cve_ids?: string[];
+    recommended_action?: string;
+  }, timeoutMs: number = 15000): Promise<import('../types').IncidentExplanationResponse> {
+    return this.request('/api/v1/intelligence/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
       timeoutMs,
     });
   }
