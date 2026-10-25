@@ -1,0 +1,15 @@
+# Root .vercelignore
+# Ensures Vercel never attempts to bundle Python backend as Serverless Functions
+backend/
+.venv/
+env/
+venv/
+scripts/
+*.db
+*.sqlite
+*.sqlite3
+*.joblib
+*.pth
+*.pt
+*.csv
+.pytest_cache/

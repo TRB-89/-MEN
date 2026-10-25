@@ -41,7 +41,7 @@ export function resolveApiBaseUrl(): string {
   // 1. Check runtime localStorage override (allows dynamic re-targeting if desired)
   if (typeof window !== 'undefined') {
     try {
-      const override = localStorage.getItem('nox_api_base_url');
+      const override = localStorage.getItem('omen_api_base_url') || localStorage.getItem('nox_api_base_url');
       if (override && override.trim()) {
         return sanitizeUrl(override.trim());
       }
@@ -65,7 +65,7 @@ export function resolveApiBaseUrl(): string {
     // Security guard: If deploying to production (e.g. Vercel), do NOT use localhost!
     if ((isCloudHost || !isDev) && isEnvLocal) {
       console.warn(
-        `[NØX Configuration Notice] VITE_API_BASE_URL points to "${cleaned}", which is unreachable in a production cloud environment. Falling back to live Render backend: https://nox-neural-backend.onrender.com`
+        `[ØMEN Configuration Notice] VITE_API_BASE_URL points to "${cleaned}", which is unreachable in a production cloud environment. Falling back to live hosted backend: https://nox-neural-backend.onrender.com`
       );
       return 'https://nox-neural-backend.onrender.com';
     }
@@ -124,6 +124,7 @@ export class ApiService {
     this.baseUrl = sanitizeUrl(url);
     if (typeof window !== 'undefined') {
       try {
+        localStorage.setItem('omen_api_base_url', this.baseUrl);
         localStorage.setItem('nox_api_base_url', this.baseUrl);
       } catch {
         // Ignored
@@ -134,6 +135,7 @@ export class ApiService {
   resetBaseUrl(): void {
     if (typeof window !== 'undefined') {
       try {
+        localStorage.removeItem('omen_api_base_url');
         localStorage.removeItem('nox_api_base_url');
       } catch {
         // Ignored

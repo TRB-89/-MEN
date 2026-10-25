@@ -90,21 +90,35 @@ app = FastAPI(
 )
 
 # Configure CORS
-origins_str = os.getenv(
+# Allow local Vite development, exact production domains, and secure Vercel deployment preview domains
+raw_origins = os.getenv("ALLOWED_ORIGINS") or os.getenv(
     "CORS_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
 )
-origins = [o.strip() for o in origins_str.split(",") if o.strip()]
-if "*" not in origins:
-    origins.append("http://localhost:5173")
-    origins.append("http://127.0.0.1:5173")
+
+# Parse explicit origins
+configured_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+for d in default_origins:
+    if d not in configured_origins:
+        configured_origins.append(d)
+
+# Vercel preview and production domain regex pattern: https://<project-name>*.vercel.app
+VERCEL_ORIGIN_REGEX = r"^https:\/\/.*\.vercel\.app$"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if "*" in origins else origins,
+    allow_origins=configured_origins,
+    allow_origin_regex=VERCEL_ORIGIN_REGEX,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
