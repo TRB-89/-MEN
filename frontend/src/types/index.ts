@@ -113,6 +113,9 @@ export interface NetworkNode {
   vuln_score: number;
   isolated: boolean;
   compromised: boolean;
+  os?: string;
+  detections_count?: number;
+  last_seen?: string;
   active_alerts_count?: number;
   last_activity?: string;
   associated_alerts?: NetworkAlert[];
@@ -130,6 +133,7 @@ export interface NetworkEdge {
   protocol: string;
   port: number;
   weight: number;
+  risk_weight?: number;
   relationship_type?: string;
   direction?: string;
   access_permissions?: string;

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { OmenJellyfishEntity, OmenEntityState } from '../components/hero/OmenJellyfishEntity';
 import { MagneticButton } from '../components/common/MagneticButton';
+import { StoryCardsBar } from '../components/dashboard/StoryCardsBar';
 import { api } from '../services/api';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -641,6 +642,11 @@ export const LandingPage: React.FC = () => {
             <ChevronRight className="w-3.5 h-3.5 group-hover:translate-y-0.5 rotate-90 transition-transform" />
           </div>
         </div>
+      </section>
+
+      {/* SECTION 01 — 4 CINEMATIC HORIZONTAL STORY CARDS (HOMEPAGE INTRODUCTION) */}
+      <section className="relative z-10 py-10 px-6 lg:px-12 max-w-7xl mx-auto border-t border-[#DCDCE0]/10">
+        <StoryCardsBar />
       </section>
 
       {/* SECTION 5 — CINEMATIC SCROLL STORYTELLING: SIX CONNECTED CHAPTERS */}
